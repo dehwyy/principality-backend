@@ -19,9 +19,9 @@
             </form>
         </header>
 
-        {{if .Principalitys}}
+        {{if .Principalities}}
         <div class="principalities-grid">
-            {{range .Principalitys}}
+            {{range .Principalities}}
             <a class="principality-card" href="/principalities/feed/{{.PrincipalityID}}">
                 <img class="principality-card__poster" src="{{$.MinioBaseURL}}/principality-media/{{.ImageKey}}" alt="{{.PrincipalityName}}" loading="lazy">
                 <div class="principality-card__body">

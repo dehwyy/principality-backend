@@ -30,7 +30,7 @@ type PageData struct {
 	Title              string
 	MinioBaseURL       string
 	ActiveTab          string
-	Principalitys      []PrincipalityView
+	Principalities     []PrincipalityView
 	Principality       PrincipalityView
 	NextPrincipalityID int
 	FeedEntryID        int
@@ -125,13 +125,13 @@ func (h *Handler) PrincipalityCatalog(ctx *gin.Context) {
 		http.StatusOK,
 		"principality_catalog.html",
 		PageData{
-			Title:         "Княжества Древней Руси",
-			MinioBaseURL:  h.Config.MinioBaseURL,
-			ActiveTab:     "catalog",
-			Principalitys: principalityViews,
-			MinArea:       rawMinArea,
-			TotalCount:    len(principalityViews),
-			FeedEntryID:   h.Repository.GetFirstPublishedPrincipalityID(),
+			Title:          "Княжества Древней Руси",
+			MinioBaseURL:   h.Config.MinioBaseURL,
+			ActiveTab:      "catalog",
+			Principalities: principalityViews,
+			MinArea:        rawMinArea,
+			TotalCount:     len(principalityViews),
+			FeedEntryID:    h.Repository.GetFirstPublishedPrincipalityID(),
 		},
 	)
 }
