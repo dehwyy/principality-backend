@@ -9,7 +9,6 @@
         #E8E8E1  фон страниц    — подложка карточки .journal-item в секции журнала донора
 
     Дополнительно оттуда же:
-        #6022DA  вторичный акцент    — .site-header__goosegoose-app-link, .goose-goose-banner
         #1A1A1A  основной текст      — цвет заголовков донора
         #4C4C4C  вторичный текст     — body color донора
         #F0F0E9  светлая подложка    — фон блока .journal-banner
@@ -41,14 +40,13 @@
     --control: #E8E8E1;
     --foreground: #1A1A1A;
     --foreground-muted: #4C4C4C;
-    --accent: #6022DA;
     --primary: #FECF00;
     --on-primary: #1A1A1A;
     --bar-bg: #000000;
     --bar-foreground: #FFFFFF;
-    --area: #6022DA;
+    --area: #1A1A1A;
     --highlight: #FECF00;
-    --like: #6022DA;
+    --like: #1A1A1A;
     --border: rgba(26, 26, 26, .14);
     --hover-underline: #262626;
 
@@ -128,7 +126,6 @@ body {
     z-index: 20;
     display: flex;
     width: 100%;
-    max-width: var(--page-width);
     height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom));
     padding-bottom: env(safe-area-inset-bottom);
     align-items: center;
@@ -613,9 +610,12 @@ body {
 
 .draft-form__replace {
     flex: none;
-    color: var(--accent);
-    font-size: 14px;
-    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--primary);
+    color: var(--on-primary);
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .draft-form__file {
@@ -683,7 +683,11 @@ body {
 }
 
 .missing__link {
-    color: var(--accent);
+    padding: 10px 18px;
+    border-radius: 10px;
+    background: var(--primary);
+    color: var(--on-primary);
+    font-weight: 600;
     text-decoration: none;
 }
 

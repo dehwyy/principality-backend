@@ -240,10 +240,10 @@ func principalities() []Principality {
 		{
 			PrincipalityID:         9,
 			PrincipalityName:       "Галицкое княжество",
-			PrincipalitySummary:    "Галич на Днестре - около 45 гектаров укреплённой площади. Центр Галицкой земли, известный белокаменным строительством; археологически изучен Крылосский комплекс городищ.",
+			PrincipalitySummary:    "",
 			PrincipalityStatus:     PrincipalityStatusDraft,
-			SettlementAreaHectares: 45,
-			SettlementType:         SettlementHillfort,
+			SettlementAreaHectares: 0,
+			SettlementType:         "",
 			ImageKey:               "galich.jpg",
 			VideoKey:               "galich.mp4",
 			AreaSource:             kuza,
