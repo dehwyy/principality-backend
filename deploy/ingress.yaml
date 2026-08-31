@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: principality-web
+  namespace: availability
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api.lab.14dev.ru
+      http:
+        paths:
+          - path: /principality-media
+            pathType: Prefix
+            backend:
+              service:
+                name: principality-media
+                port:
+                  number: 9000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: principality-web
+                port:
+                  number: 8080
+  tls:
+    - hosts:
+        - api.lab.14dev.ru
+      secretName: principality-web-tls
