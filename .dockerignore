@@ -1,0 +1,10 @@
+.git
+.gitignore
+docs
+migrations
+deploy
+README.md
+CLAUDE.md
+docker-compose.yml
+Dockerfile
+.dockerignore

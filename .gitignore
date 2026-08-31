@@ -1,0 +1,19 @@
+# артефакты сборки
+/principality-web
+*.exe
+*.test
+*.out
+
+# окружение
+.env
+.env.local
+
+# служебное для ИИ-агента — в репозиторий не идёт
+CLAUDE.md
+AGENTS.md
+.claude/
+.plans/
+.specs/
+
+# macOS
+.DS_Store
