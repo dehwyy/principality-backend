@@ -23,18 +23,20 @@
         <div class="principalities-grid">
             {{range .Principalities}}
             <a class="principality-card" href="/principalities/feed/{{.PrincipalityID}}">
-                <img class="principality-card__poster" src="{{$.MinioBaseURL}}/principality-media/{{.ImageKey}}" alt="{{.PrincipalityName}}" loading="lazy">
+                <span class="principality-card__media">
+                    <img class="principality-card__poster" src="{{$.MinioBaseURL}}/principality-media/{{.ImageKey}}" alt="{{.PrincipalityName}}" loading="lazy">
+                    <span class="like-counter">
+                        <svg class="like-counter__glyph" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 21s-8-5.1-8-10.2A4.8 4.8 0 0 1 12 7.6 4.8 4.8 0 0 1 20 10.8C20 15.9 12 21 12 21z" />
+                        </svg>
+                        {{.LikeCount}}
+                    </span>
+                </span>
                 <div class="principality-card__body">
                     <h2 class="principality-card__name">{{.PrincipalityName}}</h2>
                     <p class="principality-card__area">{{.SettlementAreaHectares}} га</p>
                     <div class="principality-card__footer">
                         <span class="settlement-badge">{{.SettlementType}}</span>
-                        <span class="like-counter">
-                            <svg class="like-counter__glyph" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M12 21s-8-5.1-8-10.2A4.8 4.8 0 0 1 12 7.6 4.8 4.8 0 0 1 20 10.8C20 15.9 12 21 12 21z" />
-                            </svg>
-                            {{.LikeCount}}
-                        </span>
                     </div>
                 </div>
             </a>
