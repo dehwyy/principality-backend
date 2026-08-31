@@ -133,7 +133,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    color: rgba(36, 41, 46, .5);
+    color: rgba(26, 26, 26, .5);
     text-decoration: none;
     transition: color var(--motion);
 }
@@ -182,7 +182,7 @@ body {
 }
 
 .principalities-filter__field::placeholder {
-    color: rgba(36, 41, 46, .5);
+    color: rgba(26, 26, 26, .5);
 }
 
 .principalities-filter__submit {
@@ -283,20 +283,22 @@ body {
     margin-top: 7px;
 }
 
-.redundancy-badge {
+.settlement-badge {
     padding: 3px 8px;
     border-radius: 999px;
     background: var(--surface-muted);
-    color: rgba(36, 41, 46, .65);
+    color: var(--foreground-muted);
     font-size: 11px;
     font-weight: 500;
+    white-space: nowrap;
+    font-size: 10px;
 }
 
 .like-counter {
     display: flex;
     align-items: center;
     gap: 4px;
-    color: rgba(36, 41, 46, .45);
+    color: rgba(26, 26, 26, .45);
     font-size: 12px;
 }
 
@@ -308,7 +310,7 @@ body {
 
 .principalities-empty {
     padding: 40px 20px;
-    color: rgba(36, 41, 46, .55);
+    color: rgba(26, 26, 26, .55);
     text-align: center;
 }
 
@@ -459,7 +461,7 @@ body {
 
 .draft-form__caption {
     margin: 0 0 8px;
-    color: rgba(36, 41, 46, .5);
+    color: rgba(26, 26, 26, .5);
     font-size: 13px;
     font-weight: 500;
 }
@@ -489,7 +491,7 @@ body {
 }
 
 .draft-form__label {
-    color: rgba(36, 41, 46, .85);
+    color: rgba(26, 26, 26, .85);
     font-size: 15px;
     white-space: nowrap;
 }
@@ -497,7 +499,7 @@ body {
 .draft-form__row_stacked .draft-form__label {
     display: block;
     margin-bottom: 5px;
-    color: rgba(36, 41, 46, .5);
+    color: rgba(26, 26, 26, .5);
     font-size: 12px;
     font-weight: 500;
 }
@@ -507,7 +509,7 @@ body {
     min-width: 0;
     border: 0;
     background: transparent;
-    color: rgba(36, 41, 46, .55);
+    color: rgba(26, 26, 26, .55);
     font-family: inherit;
     font-size: 15px;
     text-align: right;
@@ -523,7 +525,7 @@ body {
 .draft-form__select {
     border: 0;
     background: transparent;
-    color: rgba(36, 41, 46, .55);
+    color: rgba(26, 26, 26, .55);
     font-family: inherit;
     font-size: 15px;
     text-align: right;
@@ -532,7 +534,7 @@ body {
 
 .screen__note {
     margin: 10px 0 0;
-    color: rgba(36, 41, 46, .55);
+    color: rgba(26, 26, 26, .55);
     font-size: 14px;
     line-height: 19px;
 }
@@ -569,7 +571,7 @@ body {
 
 .draft-form__filename {
     overflow: hidden;
-    color: rgba(36, 41, 46, .5);
+    color: rgba(26, 26, 26, .5);
     font-size: 13px;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -588,7 +590,7 @@ body {
 
 .draft-form__input::placeholder,
 .draft-form__input::-webkit-input-placeholder {
-    color: rgba(36, 41, 46, .35);
+    color: rgba(26, 26, 26, .35);
 }
 
 .draft-form__input:invalid:not(:focus):not(:placeholder-shown) {
@@ -596,7 +598,7 @@ body {
 }
 
 .draft-form__hint {
-    color: rgba(36, 41, 46, .4);
+    color: rgba(26, 26, 26, .4);
     font-size: 12px;
     font-weight: 400;
 }
@@ -604,12 +606,12 @@ body {
 .draft-form__submit:disabled,
 .draft-form:has(:invalid) .draft-form__submit {
     background: var(--control);
-    color: rgba(36, 41, 46, .35);
+    color: rgba(26, 26, 26, .35);
     pointer-events: none;
 }
 
 .draft-form__select:has(option[value=""]:checked) {
-    color: rgba(36, 41, 46, .35);
+    color: rgba(26, 26, 26, .35);
 }
 
 .draft-form__submit {
