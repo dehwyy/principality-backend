@@ -523,7 +523,7 @@ body {
 
 .draft-form__label {
     color: rgba(26, 26, 26, .85);
-    font-size: 15px;
+    font-size: 14px;
     white-space: nowrap;
 }
 
@@ -542,7 +542,7 @@ body {
     background: transparent;
     color: rgba(26, 26, 26, .55);
     font-family: inherit;
-    font-size: 15px;
+    font-size: 14px;
     text-align: right;
     outline: none;
 }
@@ -558,7 +558,7 @@ body {
     background: transparent;
     color: rgba(26, 26, 26, .55);
     font-family: inherit;
-    font-size: 15px;
+    font-size: 14px;
     text-align: right;
     outline: none;
 }
