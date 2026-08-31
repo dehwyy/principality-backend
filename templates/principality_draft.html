@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{{.Title}} — население Древней Руси по археологии</title>
+    <link rel="stylesheet" href="/static/css/principalities.css">
+</head>
+
+<body>
+    <main class="screen">
+        <header class="screen__head">
+            <h1 class="screen__title">{{.Title}}</h1>
+            <p class="screen__note">Черновик «{{.Principality.PrincipalityName}}». Заполните краткое описание и параметры, чтобы опубликовать княжество.</p>
+        </header>
+
+        <form class="draft-form">
+            <section class="draft-form__group">
+                <p class="draft-form__caption">Медиа</p>
+                <div class="draft-form__fields">
+                    <label class="draft-form__media">
+                        <img class="draft-form__preview" src="{{.MinioBaseURL}}/principality-media/{{.Principality.ImageKey}}"
+                            alt="{{.Principality.PrincipalityName}}">
+                        <span class="draft-form__media-body">
+                            <span class="draft-form__label">Изображение</span>
+                            <span class="draft-form__filename">{{.Principality.ImageKey}}</span>
+                        </span>
+                        <span class="draft-form__replace">Заменить</span>
+                        <input class="draft-form__file" type="file" name="image_key" accept="image/*">
+                    </label>
+                    <label class="draft-form__media">
+                        <video class="draft-form__preview" src="{{.MinioBaseURL}}/principality-media/{{.Principality.VideoKey}}#t=0.5"
+                            preload="metadata" muted playsinline></video>
+                        <span class="draft-form__media-body">
+                            <span class="draft-form__label">Видео</span>
+                            <span class="draft-form__filename">{{.Principality.VideoKey}}</span>
+                        </span>
+                        <span class="draft-form__replace">Заменить</span>
+                        <input class="draft-form__file" type="file" name="video_key" accept="video/*">
+                    </label>
+                </div>
+            </section>
+
+            <section class="draft-form__group">
+                <p class="draft-form__caption">Описание</p>
+                <div class="draft-form__fields">
+                    <div class="draft-form__row">
+                        <label class="draft-form__label" for="principality_name">Название княжества</label>
+                        <input class="draft-form__input" type="text" id="principality_name" name="principality_name"
+                            value="{{.Principality.PrincipalityName}}" required>
+                    </div>
+                    <div class="draft-form__row draft-form__row_stacked">
+                        <label class="draft-form__label" for="principality_summary">Краткое описание</label>
+                        <textarea class="draft-form__input" id="principality_summary" name="principality_summary" rows="3"
+                            placeholder="Что известно об укреплениях и застройке по раскопкам">{{.Principality.PrincipalitySummary}}</textarea>
+                    </div>
+                </div>
+            </section>
+
+            <section class="draft-form__group">
+                <p class="draft-form__caption">Данные археологии</p>
+                <div class="draft-form__fields">
+                    <div class="draft-form__row draft-form__row_stacked">
+                        <label class="draft-form__label" for="settlement_area_hectares">Площадь укреплённой части, га
+                            <span class="draft-form__hint">по археологическому своду</span></label>
+                        <input class="draft-form__input" type="text" id="settlement_area_hectares"
+                            name="settlement_area_hectares" inputmode="decimal" placeholder="145"
+                            pattern="\d{1,4}([.,]\d{1,2})?" title="Площадь в гектарах, до двух знаков после запятой"
+                            value="{{.Principality.SettlementAreaHectares}}" required>
+                    </div>
+                    <div class="draft-form__row">
+                        <label class="draft-form__label" for="settlement_type">Тип поселения</label>
+                        <select class="draft-form__select" id="settlement_type" name="settlement_type" required>
+                            <option value="" {{if eq .Principality.SettlementTypeCode "" }}selected{{end}}>не выбрано</option>
+                            <option value="capital" {{if eq .Principality.SettlementTypeCode "capital" }}selected{{end}}>стольный град
+                            </option>
+                            <option value="fortified_town" {{if eq .Principality.SettlementTypeCode "fortified_town" }}selected{{end}}>окольный
+                                город</option>
+                            <option value="hillfort" {{if eq .Principality.SettlementTypeCode "hillfort" }}selected{{end}}>городище-крепость</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <button class="draft-form__submit" type="button">Опубликовать</button>
+        </form>
+    </main>
+    {{template "tab_bar" .}}
+</body>
+
+</html>

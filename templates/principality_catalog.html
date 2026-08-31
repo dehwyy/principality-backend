@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{{.Title}} — население Древней Руси по археологии</title>
+    <link rel="stylesheet" href="/static/css/principalities.css">
+</head>
+
+<body>
+    <main class="screen">
+        <header class="screen__head">
+            <h1 class="screen__title">{{.Title}}</h1>
+            <form class="principalities-filter" method="get" action="/principalities">
+                <input class="principalities-filter__field" type="text" name="minArea" inputmode="decimal"
+                    placeholder="Площадь не менее, га" value="{{.MinArea}}">
+                <button class="principalities-filter__submit" type="submit">Найти</button>
+            </form>
+        </header>
+
+        {{if .Principalitys}}
+        <div class="principalities-grid">
+            {{range .Principalitys}}
+            <a class="principality-card" href="/principalities/feed/{{.PrincipalityID}}">
+                <img class="principality-card__poster" src="{{$.MinioBaseURL}}/principality-media/{{.ImageKey}}" alt="{{.PrincipalityName}}" loading="lazy">
+                <div class="principality-card__body">
+                    <h2 class="principality-card__name">{{.PrincipalityName}}</h2>
+                    <p class="principality-card__area">{{.SettlementAreaHectares}} га</p>
+                    <div class="principality-card__footer">
+                        <span class="redundancy-badge">{{.SettlementType}}</span>
+                        <span class="like-counter">
+                            <svg class="like-counter__glyph" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 21s-8-5.1-8-10.2A4.8 4.8 0 0 1 12 7.6 4.8 4.8 0 0 1 20 10.8C20 15.9 12 21 12 21z" />
+                            </svg>
+                            {{.LikeCount}}
+                        </span>
+                    </div>
+                </div>
+            </a>
+            {{end}}
+        </div>
+        {{else}}
+        <p class="principalities-empty">Княжеств с площадью не менее {{.MinArea}} га не нашлось.</p>
+        {{end}}
+    </main>
+    {{template "tab_bar" .}}
+</body>
+
+</html>
