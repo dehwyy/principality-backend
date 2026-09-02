@@ -1,36 +1,8 @@
 /*
-    Стилистика скопирована с Arzamas — arzamas.academy, снято через getComputedStyle
-    и разбор их таблицы стилей 31.08.2026.
-
-    Три цвета с точными кодами:
-        #000000  тёмный фон     — фон главной страницы донора; у нас нижняя панель вкладок и лента
-        #FECF00  primary        — кнопка «Скачать приложение» в шапке донора; у нас все кнопки
-                                  и активный пункт панели вкладок
-        #E8E8E1  фон страниц    — подложка карточки .journal-item в секции журнала донора
-
-    Дополнительно оттуда же:
-        #1A1A1A  основной текст      — цвет заголовков донора
-        #4C4C4C  вторичный текст     — body color донора
-        #F0F0E9  светлая подложка    — фон блока .journal-banner
-        #FFFFFF  подложка карточки
-        #262626  подчёркивание заголовка карточки при наведении
-
-    Донор двухрежимный: главная тёмная, секции журнала на бумажном фоне. Приложение повторяет
-    ровно это — тёмные лента и панель вкладок, светлые каталог и форма добавления.
-
-    Форма карточек: border-radius 10px — доминирующее скругление донора
-    (236 элементов против 28 со скруглением 20px).
-
-    Hover скопирован дословно по смыслу с правил донора:
-        .episode-item:hover .episode-cover img  { opacity: .5 }
-        a.item:hover .item-cover img            { opacity: .8 }
-        a.item:hover .item-heading              { border-bottom-color: #262626 }
-    То есть при наведении донор приглушает обложку и подчёркивает заголовок,
-    а не двигает карточку. Повторено ровно это.
-
-    Шрифты донора: Formular (гротеск) и Cormorant (антиква). Formular проприетарный,
-    поэтому основной текст набран системным гротеском, а заголовки — Cormorant
-    с откатом на Georgia, если он не установлен.
+За основу взят сайт Arzamas
+- Фон главной страницы: #000000
+- Основная кнопка #FEE500
+- Альтернативный фон страницы #E8E8E1
 */
 
 :root {
@@ -40,28 +12,24 @@
     --control: #E8E8E1;
     --foreground: #1A1A1A;
     --foreground-muted: #4C4C4C;
-    --primary: #FECF00;
+    --primary: #FEE500;
     --on-primary: #1A1A1A;
     --bar-bg: #000000;
-    --bar-foreground: #FFFFFF;
     --area: #1A1A1A;
-    --highlight: #FECF00;
     --like: #1A1A1A;
     --border: rgba(26, 26, 26, .14);
     --hover-underline: #262626;
 
     --feed-bg: #1A1A1A;
     --feed-foreground: #FFFFFF;
-    --feed-area: #FECF00;
+    --feed-area: #FEE500;
     --feed-like: #FFFFFF;
 
     --tab-bar-height: 64px;
     --page-width: 430px;
-    --radius-principality: 10px;
-    --radius-control: 10px;
+    --radius-principality: 20px;
 
     --ui-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", sans-serif;
-    --display-font: "Cormorant", Georgia, "Times New Roman", serif;
     --motion: .2s cubic-bezier(.4, 0, .2, 1);
 }
 
@@ -126,6 +94,7 @@ body {
     z-index: 20;
     display: flex;
     width: 100%;
+    max-width: var(--page-width);
     height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom));
     padding-bottom: env(safe-area-inset-bottom);
     align-items: center;
@@ -173,7 +142,7 @@ body {
     margin: 16px 0 0;
     padding: 6px 6px 6px 14px;
     background: var(--surface-muted);
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-principality);
 }
 
 .principalities-filter__field {
@@ -194,7 +163,7 @@ body {
 .principalities-filter__submit {
     padding: 8px 16px;
     border: 0;
-    border-radius: 10px;
+    border-radius: var(--radius-principality);
     background: var(--primary);
     color: var(--on-primary);
     font-family: inherit;
@@ -218,7 +187,8 @@ body {
 }
 
 .principality-card {
-    display: block;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     border-radius: var(--radius-principality);
     background: var(--surface);
@@ -271,6 +241,9 @@ body {
 }
 
 .principality-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
     padding: 11px 12px 12px;
 }
 
@@ -283,23 +256,13 @@ body {
 }
 
 .principality-card__area {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 7px;
+    margin: auto 0 0;
+    padding-top: 7px;
     color: var(--area);
     font-size: 19px;
     line-height: 23px;
     font-weight: 700;
     letter-spacing: -.02em;
-}
-
-.principality-card__area::before {
-    content: "";
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: currentColor;
 }
 
 .principality-card__footer {
@@ -432,7 +395,7 @@ body {
     pointer-events: none;
 }
 
-.feed__toggle:checked ~ .feed__summary {
+.feed__toggle:checked~.feed__summary {
     -webkit-line-clamp: unset;
 }
 
@@ -449,7 +412,7 @@ body {
     content: "ещё";
 }
 
-.feed__toggle:checked ~ .feed__toggle-label::after {
+.feed__toggle:checked~.feed__toggle-label::after {
     content: "свернуть";
 }
 
@@ -654,7 +617,7 @@ body {
     margin-top: 24px;
     padding: 15px;
     border: 0;
-    border-radius: 14px;
+    border-radius: var(--radius-principality);
     background: var(--primary);
     color: var(--on-primary);
     font-family: inherit;
@@ -689,22 +652,4 @@ body {
     color: var(--on-primary);
     font-weight: 600;
     text-decoration: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-
-    .principality-card,
-    .principalities-filter__submit,
-    .draft-form__submit,
-    .feed__action,
-    .tab-bar__link {
-        transition: none;
-    }
-
-    .principality-card:active,
-    .principalities-filter__submit:active,
-    .draft-form__submit:active,
-    .feed__action:active {
-        transform: none;
-    }
 }

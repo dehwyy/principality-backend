@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -22,8 +20,6 @@ type PrincipalityView struct {
 	ImageKey               string
 	VideoKey               string
 	LikeCount              int
-	IsEstimated            bool
-	AreaSource             string
 }
 
 type PageData struct {
@@ -33,7 +29,6 @@ type PageData struct {
 	Principalities     []PrincipalityView
 	Principality       PrincipalityView
 	NextPrincipalityID int
-	FeedEntryID        int
 	MinArea            string
 	TotalCount         int
 }
@@ -51,20 +46,30 @@ func NewHandler(r *repository.Repository, c *config.Config) *Handler {
 }
 
 func (h *Handler) PrincipalityFeed(ctx *gin.Context) {
-	principalityID, err := strconv.Atoi(ctx.Param("principalityId"))
-	if err != nil {
-		h.principalityMissing(ctx, "Идентификатор княжества должен быть числом")
-		return
-	}
+	requestedPrincipality := strings.Trim(ctx.Param("principalityId"), "/")
 
 	var principality repository.Principality
-	if ctx.Query("next") == "true" {
-		principality, err = h.Repository.GetNextPublishedPrincipality(principalityID)
+	var err error
+
+	if requestedPrincipality == "" {
+		principality, err = h.Repository.GetFirstPublishedPrincipality()
 	} else {
-		principality, err = h.Repository.GetPublishedPrincipality(principalityID)
+		principalityID, convErr := repository.PrincipalityIDFromString(requestedPrincipality)
+		if convErr != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"status": "error",
+				"error":  "Неверный идентификатор княжества",
+			})
+			return
+		}
+		if ctx.Query("next") == "true" {
+			principality, err = h.Repository.GetNextPublishedPrincipality(principalityID)
+		} else {
+			principality, err = h.Repository.GetPublishedPrincipality(principalityID)
+		}
 	}
 	if err != nil {
-		h.principalityMissing(ctx, "Такого княжества нет")
+
 		return
 	}
 
@@ -82,8 +87,7 @@ func (h *Handler) PrincipalityFeed(ctx *gin.Context) {
 			MinioBaseURL:       h.Config.MinioBaseURL,
 			ActiveTab:          "feed",
 			Principality:       principalityView(principality),
-			NextPrincipalityID: nextPrincipalityID,
-			FeedEntryID:        h.Repository.GetFirstPublishedPrincipalityID(),
+			NextPrincipalityID: nextPrincipalityID.Int(),
 		},
 	)
 }
@@ -91,7 +95,9 @@ func (h *Handler) PrincipalityFeed(ctx *gin.Context) {
 func (h *Handler) PrincipalityDraft(ctx *gin.Context) {
 	principality, err := h.Repository.GetDraftPrincipality()
 	if err != nil {
-		h.principalityMissing(ctx, "Черновик княжества не найден")
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Произошла ошибка при получении княжества",
+		})
 		return
 	}
 
@@ -103,17 +109,13 @@ func (h *Handler) PrincipalityDraft(ctx *gin.Context) {
 			MinioBaseURL: h.Config.MinioBaseURL,
 			ActiveTab:    "draft",
 			Principality: principalityView(principality),
-			FeedEntryID:  h.Repository.GetFirstPublishedPrincipalityID(),
 		},
 	)
 }
 
 func (h *Handler) PrincipalityCatalog(ctx *gin.Context) {
 	rawMinArea := strings.TrimSpace(ctx.Query("minArea"))
-	minArea, err := strconv.ParseFloat(strings.ReplaceAll(rawMinArea, ",", "."), 64)
-	if err != nil {
-		minArea = 0
-	}
+	minArea := repository.SettlementAreaHectaresFromString(strings.ReplaceAll(rawMinArea, ",", "."))
 
 	principalities := h.Repository.GetPublishedPrincipalities(minArea)
 	principalityViews := make([]PrincipalityView, 0, len(principalities))
@@ -131,47 +133,20 @@ func (h *Handler) PrincipalityCatalog(ctx *gin.Context) {
 			Principalities: principalityViews,
 			MinArea:        rawMinArea,
 			TotalCount:     len(principalityViews),
-			FeedEntryID:    h.Repository.GetFirstPublishedPrincipalityID(),
-		},
-	)
-}
-
-func (h *Handler) principalityMissing(ctx *gin.Context, reason string) {
-	ctx.HTML(
-		http.StatusNotFound,
-		"principality_missing.html",
-		PageData{
-			Title:        reason,
-			MinioBaseURL: h.Config.MinioBaseURL,
-			FeedEntryID:  h.Repository.GetFirstPublishedPrincipalityID(),
 		},
 	)
 }
 
 func principalityView(principality repository.Principality) PrincipalityView {
 	return PrincipalityView{
-		PrincipalityID:         principality.PrincipalityID,
+		PrincipalityID:         principality.PrincipalityID.Int(),
 		PrincipalityName:       principality.PrincipalityName,
 		PrincipalitySummary:    principality.PrincipalitySummary,
-		SettlementAreaHectares: formatArea(principality.SettlementAreaHectares),
+		SettlementAreaHectares: principality.SettlementAreaHectares.String(),
 		SettlementType:         principality.SettlementType.Title(),
-		SettlementTypeCode:     string(principality.SettlementType),
+		SettlementTypeCode:     principality.SettlementType.String(),
 		ImageKey:               principality.ImageKey,
 		VideoKey:               principality.VideoKey,
 		LikeCount:              principality.LikeCount(),
-		IsEstimated:            principality.IsEstimated(),
-		AreaSource:             principality.AreaSource,
 	}
-}
-
-func formatArea(areaHectares float64) string {
-	if areaHectares == 0 {
-		return ""
-	}
-	return strings.Replace(
-		strings.TrimSuffix(strings.TrimRight(fmt.Sprintf("%.1f", areaHectares), "0"), "."),
-		".",
-		",",
-		1,
-	)
 }

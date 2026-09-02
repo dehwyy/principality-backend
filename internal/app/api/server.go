@@ -27,7 +27,7 @@ func StartServer() {
 	r.LoadHTMLGlob("templates/*")
 	r.Static("/static", "./static")
 
-	r.GET("/principalities/feed/:principalityId", principalityHandler.PrincipalityFeed)
+	r.GET("/principalities/feed/*principalityId", principalityHandler.PrincipalityFeed)
 	r.GET("/principalities/draft", principalityHandler.PrincipalityDraft)
 	r.GET("/principalities", principalityHandler.PrincipalityCatalog)
 
