@@ -1,27 +1,46 @@
 package config
 
-import "os"
+import (
+	"os"
 
-const (
-	defaultMinioBaseURL = "http://localhost:9000"
-	defaultServerAddr   = ":8080"
+	"github.com/joho/godotenv"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type Config struct {
+	ServiceHost  string
+	ServicePort  int
 	MinioBaseURL string
-	ServerAddr   string
 }
 
-func NewConfig() *Config {
-	return &Config{
-		MinioBaseURL: envOrDefault("MINIO_BASE_URL", defaultMinioBaseURL),
-		ServerAddr:   envOrDefault("SERVER_ADDR", defaultServerAddr),
-	}
-}
+func NewConfig() (*Config, error) {
+	var err error
 
-func envOrDefault(key, fallback string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
+	configName := "config"
+	_ = godotenv.Load()
+	if os.Getenv("CONFIG_NAME") != "" {
+		configName = os.Getenv("CONFIG_NAME")
 	}
-	return fallback
+
+	viper.SetConfigName(configName)
+	viper.SetConfigType("toml")
+	viper.AddConfigPath("config")
+	viper.AddConfigPath(".")
+	viper.WatchConfig()
+
+	err = viper.ReadInConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := &Config{}
+	err = viper.Unmarshal(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Info("config parsed")
+
+	return cfg, nil
 }

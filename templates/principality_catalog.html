@@ -23,24 +23,34 @@
         {{if .Principalities}}
         <div class="principalities-grid">
             {{range .Principalities}}
-            <a class="principality-card" href="/principalities/feed/{{.PrincipalityID}}">
-                <span class="principality-card__media">
-                    <img class="principality-card__poster" src="{{$.MinioBaseURL}}/principality-media/{{.ImageKey}}" alt="{{.PrincipalityName}}" loading="lazy">
-                    <span class="like-counter">
-                        <svg class="like-counter__glyph" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 21s-8-5.1-8-10.2A4.8 4.8 0 0 1 12 7.6 4.8 4.8 0 0 1 20 10.8C20 15.9 12 21 12 21z" />
-                        </svg>
-                        {{.LikeCount}}
+            <article class="principality-card">
+                <a class="principality-card__link" href="/principalities/feed/{{.PrincipalityID}}">
+                    <span class="principality-card__media">
+                        <span class="principality-card__poster" role="img" aria-label="{{.PrincipalityName}}"
+                            style="background-image: {{if .ImageURL}}url('{{.ImageURL}}'), {{end}}url('{{$.DefaultImageURL}}')"></span>
+                        <span class="like-counter">
+                            <svg class="like-counter__glyph" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 21s-8-5.1-8-10.2A4.8 4.8 0 0 1 12 7.6 4.8 4.8 0 0 1 20 10.8C20 15.9 12 21 12 21z" />
+                            </svg>
+                            {{.LikeCount}}
+                        </span>
                     </span>
-                </span>
-                <div class="principality-card__body">
-                    <h2 class="principality-card__name">{{.PrincipalityName}}</h2>
-                    <p class="principality-card__founding">{{.FoundingYear}}</p>
-                    <div class="principality-card__footer">
-                        <span class="land-coefficient-badge">коэф. земли {{.LandCoefficient}}</span>
-                    </div>
-                </div>
-            </a>
+                    <span class="principality-card__body">
+                        <h2 class="principality-card__name">{{.PrincipalityName}}</h2>
+                        <p class="principality-card__founding">{{.FoundingYear}}</p>
+                        <span class="principality-card__footer">
+                            <span class="land-coefficient-badge">коэф. земли {{.LandCoefficient}}</span>
+                        </span>
+                    </span>
+                </a>
+                <form class="principality-card__remove" method="post" action="/principalities/{{.PrincipalityID}}/remove">
+                    <button class="principality-card__remove-button" type="submit" title="Удалить княжество" aria-label="Удалить княжество">
+                        <svg class="principality-card__remove-glyph" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4z" />
+                        </svg>
+                    </button>
+                </form>
+            </article>
             {{end}}
         </div>
         {{else}}

@@ -10,8 +10,10 @@
 
 <body class="page page_feed">
     <main class="screen screen_feed">
-        <video class="feed__video" src="{{.MinioBaseURL}}/principality-media/{{.Principality.VideoKey}}" poster="{{.MinioBaseURL}}/principality-media/{{.Principality.ImageKey}}" autoplay muted loop
-            playsinline></video>
+        <video class="feed__video" autoplay muted loop playsinline>
+            {{if .Principality.VideoURL}}<source src="{{.Principality.VideoURL}}" type="video/mp4">{{end}}
+            <source src="{{.DefaultVideoURL}}" type="video/mp4">
+        </video>
         <div class="feed__scrim"></div>
 
         <div class="feed__rail">

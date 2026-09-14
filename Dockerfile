@@ -10,6 +10,7 @@ WORKDIR /app
 COPY --from=build /principality-web /app/principality-web
 COPY templates /app/templates
 COPY static /app/static
+COPY config /app/config
 EXPOSE 8080
 USER nonroot:nonroot
 ENTRYPOINT ["/app/principality-web"]
