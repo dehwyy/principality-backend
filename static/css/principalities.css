@@ -137,12 +137,20 @@ body {
 
 .principalities-filter {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
     margin: 16px 0 0;
-    padding: 6px 6px 6px 14px;
+    padding: 10px 6px 6px 14px;
     background: var(--surface-muted);
     border-radius: var(--radius-principality);
+}
+
+.principalities-filter__caption {
+    flex: 1 0 100%;
+    color: rgba(26, 26, 26, .6);
+    font-size: 13px;
+    font-weight: 500;
 }
 
 .principalities-filter__field {
@@ -156,8 +164,10 @@ body {
     outline: none;
 }
 
-.principalities-filter__field::placeholder {
-    color: rgba(26, 26, 26, .5);
+.principalities-filter__field {
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 32px;
 }
 
 .principalities-filter__submit {
@@ -255,7 +265,7 @@ body {
     letter-spacing: -.01em;
 }
 
-.principality-card__area {
+.principality-card__founding {
     margin: auto 0 0;
     padding-top: 7px;
     color: var(--area);
@@ -273,7 +283,7 @@ body {
     margin-top: 7px;
 }
 
-.settlement-badge {
+.land-coefficient-badge {
     padding: 3px 8px;
     border-radius: 999px;
     background: var(--surface-muted);
@@ -331,7 +341,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 24px;
+    gap: 18px;
     color: var(--feed-foreground);
 }
 
@@ -416,33 +426,29 @@ body {
     content: "свернуть";
 }
 
-.feed__fields {
+.feed__field {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    margin-top: 12px;
+    gap: 2px;
+    text-align: center;
 }
 
-.feed__area {
-    flex: 0 0 auto;
+.feed__field-value {
     color: var(--feed-area);
-    font-size: 27px;
-    line-height: 31px;
+    font-size: 21px;
+    line-height: 24px;
     font-weight: 700;
     letter-spacing: -.025em;
     white-space: nowrap;
 }
 
-.feed__badge {
-    flex: 0 0 auto;
-    white-space: nowrap;
-    padding: 5px 10px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, .16);
-    backdrop-filter: blur(16px);
-    color: rgba(255, 255, 255, .95);
-    font-size: 12px;
+.feed__field-caption {
+    color: rgba(255, 255, 255, .8);
+    font-size: 11px;
+    line-height: 13px;
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .draft-form {
@@ -514,16 +520,6 @@ body {
     width: 100%;
     resize: none;
     text-align: left;
-}
-
-.draft-form__select {
-    border: 0;
-    background: transparent;
-    color: rgba(26, 26, 26, .55);
-    font-family: inherit;
-    font-size: 14px;
-    text-align: right;
-    outline: none;
 }
 
 .screen__note {
@@ -607,10 +603,6 @@ body {
     pointer-events: none;
 }
 
-.draft-form__select:has(option[value=""]:checked) {
-    color: rgba(26, 26, 26, .35);
-}
-
 .draft-form__submit {
     display: block;
     width: 100%;
@@ -631,25 +623,4 @@ body {
 .draft-form__submit:active {
     transform: scale(.99);
     opacity: .85;
-}
-
-.missing {
-    padding: 120px 32px;
-    text-align: center;
-}
-
-.missing__title {
-    margin: 0 0 8px;
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -.02em;
-}
-
-.missing__link {
-    padding: 10px 18px;
-    border-radius: 10px;
-    background: var(--primary);
-    color: var(--on-primary);
-    font-weight: 600;
-    text-decoration: none;
 }

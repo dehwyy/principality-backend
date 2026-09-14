@@ -13,9 +13,10 @@
         <header class="screen__head">
             <h1 class="screen__title">{{.Title}}</h1>
             <form class="principalities-filter" method="get" action="/principalities">
-                <input class="principalities-filter__field" type="text" name="minArea" inputmode="decimal"
-                    placeholder="Площадь не менее, га" value="{{.MinArea}}">
-                <button class="principalities-filter__submit" type="submit">Найти</button>
+                <label class="principalities-filter__caption" for="founded_before">Основано не позднее</label>
+                <input class="principalities-filter__field" type="date" id="founded_before" name="foundedBefore"
+                    value="{{.FoundedBefore}}">
+                <button class="principalities-filter__submit" type="submit">Показать</button>
             </form>
         </header>
 
@@ -34,16 +35,16 @@
                 </span>
                 <div class="principality-card__body">
                     <h2 class="principality-card__name">{{.PrincipalityName}}</h2>
-                    <p class="principality-card__area">{{.SettlementAreaHectares}} га</p>
+                    <p class="principality-card__founding">{{.FoundingYear}}</p>
                     <div class="principality-card__footer">
-                        <span class="settlement-badge">{{.SettlementType}}</span>
+                        <span class="land-coefficient-badge">коэф. земли {{.LandCoefficient}}</span>
                     </div>
                 </div>
             </a>
             {{end}}
         </div>
         {{else}}
-        <p class="principalities-empty">Княжеств с площадью не менее {{.MinArea}} га не нашлось.</p>
+        <p class="principalities-empty">Княжеств, основанных не позднее {{.FoundedBefore}}, не нашлось.</p>
         {{end}}
     </main>
     {{template "tab_bar" .}}

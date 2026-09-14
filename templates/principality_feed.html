@@ -15,6 +15,14 @@
         <div class="feed__scrim"></div>
 
         <div class="feed__rail">
+            <span class="feed__field">
+                <span class="feed__field-value">{{.Principality.FoundingYear}}</span>
+                <span class="feed__field-caption">основано</span>
+            </span>
+            <span class="feed__field">
+                <span class="feed__field-value">{{.Principality.LandCoefficient}}</span>
+                <span class="feed__field-caption">коэф. земли</span>
+            </span>
             <span class="feed__action">
                 <svg class="feed__action-glyph feed__action-glyph_like" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M12 21s-8-5.1-8-10.2A4.8 4.8 0 0 1 12 7.6 4.8 4.8 0 0 1 20 10.8C20 15.9 12 21 12 21z" />
@@ -34,10 +42,6 @@
             <input class="feed__toggle" type="checkbox" id="principality-summary-toggle">
             <p class="feed__summary">{{.Principality.PrincipalitySummary}}</p>
             <label class="feed__toggle-label" for="principality-summary-toggle"></label>
-            <div class="feed__fields">
-                <span class="feed__area">{{.Principality.SettlementAreaHectares}} га</span>
-                <span class="feed__badge">{{.Principality.SettlementType}}</span>
-            </div>
         </div>
     </main>
     {{template "tab_bar" .}}

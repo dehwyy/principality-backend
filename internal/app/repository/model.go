@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var ErrPrincipalityNotFound = errors.New("княжество не найдено")
@@ -33,78 +34,72 @@ const (
 	PrincipalityStatusRemoved   PrincipalityStatus = "removed"
 )
 
-type SettlementType string
+const foundingDateLayout = "2006-01-02"
 
-const (
-	SettlementCapital       SettlementType = "capital"
-	SettlementFortifiedTown SettlementType = "fortified_town"
-	SettlementHillfort      SettlementType = "hillfort"
-)
+type FoundingDate time.Time
 
-var settlementTitles = map[SettlementType]string{
-	SettlementCapital:       "стольный град",
-	SettlementFortifiedTown: "окольный город",
-	SettlementHillfort:      "городище-крепость",
-}
-
-var builtUpRatios = map[SettlementType]float64{
-	SettlementCapital:       0.55,
-	SettlementFortifiedTown: 0.45,
-	SettlementHillfort:      0.30,
-}
-
-func (t SettlementType) String() string {
-	return string(t)
-}
-
-func (t SettlementType) Title() string {
-	if title, ok := settlementTitles[t]; ok {
-		return title
-	}
-	return string(t)
-}
-
-func (t SettlementType) BuiltUpRatio() float64 {
-	if ratio, ok := builtUpRatios[t]; ok {
-		return ratio
-	}
-	return builtUpRatios[SettlementHillfort]
-}
-
-type SettlementAreaHectares float64
-
-func SettlementAreaHectaresFromString(
+func FoundingDateFromString(
 	s string,
-) SettlementAreaHectares {
-	ha, err := strconv.ParseFloat(s, 64)
+) (FoundingDate, error) {
+	parsed, err := time.Parse(foundingDateLayout, s)
 	if err != nil {
-		return 0
+		return FoundingDate{}, err
 	}
-	return SettlementAreaHectares(ha)
+	return FoundingDate(parsed), nil
 }
 
-func (s SettlementAreaHectares) String() string {
-	if s == 0 {
+func FoundedInYear(year int) FoundingDate {
+	return FoundingDate(time.Date(year, time.January, 1, 0, 0, 0, 0, time.UTC))
+}
+
+func (d FoundingDate) IsZero() bool {
+	return time.Time(d).IsZero()
+}
+
+func (d FoundingDate) After(other FoundingDate) bool {
+	return time.Time(d).After(time.Time(other))
+}
+
+func (d FoundingDate) String() string {
+	if d.IsZero() {
 		return ""
 	}
-	return strings.Replace(
-		strings.TrimSuffix(strings.TrimRight(fmt.Sprintf("%.1f", s), "0"), "."),
-		".",
-		",",
-		1,
-	)
+	return time.Time(d).Format(foundingDateLayout)
+}
+
+func (d FoundingDate) YearTitle() string {
+	if d.IsZero() {
+		return ""
+	}
+	return fmt.Sprintf("%d г.", time.Time(d).Year())
+}
+
+type LandCoefficient float64
+
+func (c LandCoefficient) String() string {
+	if c == 0 {
+		return ""
+	}
+	return strings.Replace(fmt.Sprintf("%.2f", float64(c)), ".", ",", 1)
+}
+
+func (c LandCoefficient) InputValue() string {
+	if c == 0 {
+		return ""
+	}
+	return fmt.Sprintf("%.2f", float64(c))
 }
 
 type Principality struct {
-	PrincipalityID         PrincipalityID
-	PrincipalityName       string
-	PrincipalitySummary    string
-	PrincipalityStatus     PrincipalityStatus
-	SettlementAreaHectares SettlementAreaHectares
-	SettlementType         SettlementType
-	ImageKey               string
-	VideoKey               string
-	LikedBy                []int
+	PrincipalityID      PrincipalityID
+	PrincipalityName    string
+	PrincipalitySummary string
+	PrincipalityStatus  PrincipalityStatus
+	FoundingDate        FoundingDate
+	LandCoefficient     LandCoefficient
+	ImageKey            string
+	VideoKey            string
+	LikedBy             []int
 }
 
 func (n Principality) LikeCount() int {

@@ -11,15 +11,16 @@ import (
 )
 
 type PrincipalityView struct {
-	PrincipalityID         int
-	PrincipalityName       string
-	PrincipalitySummary    string
-	SettlementAreaHectares string
-	SettlementType         string
-	SettlementTypeCode     string
-	ImageKey               string
-	VideoKey               string
-	LikeCount              int
+	PrincipalityID       int
+	PrincipalityName     string
+	PrincipalitySummary  string
+	FoundingDate         string
+	FoundingYear         string
+	LandCoefficient      string
+	LandCoefficientValue string
+	ImageKey             string
+	VideoKey             string
+	LikeCount            int
 }
 
 type PageData struct {
@@ -29,7 +30,7 @@ type PageData struct {
 	Principalities     []PrincipalityView
 	Principality       PrincipalityView
 	NextPrincipalityID int
-	MinArea            string
+	FoundedBefore      string
 	TotalCount         int
 }
 
@@ -58,7 +59,7 @@ func (h *Handler) PrincipalityFeed(ctx *gin.Context) {
 		if convErr != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"status": "error",
-				"error":  "Неверный идентификатор княжества",
+				"error":  "Неверный идентификатор княжества",
 			})
 			return
 		}
@@ -69,7 +70,10 @@ func (h *Handler) PrincipalityFeed(ctx *gin.Context) {
 		}
 	}
 	if err != nil {
-
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"status": "error",
+			"error":  err.Error(),
+		})
 		return
 	}
 
@@ -114,10 +118,14 @@ func (h *Handler) PrincipalityDraft(ctx *gin.Context) {
 }
 
 func (h *Handler) PrincipalityCatalog(ctx *gin.Context) {
-	rawMinArea := strings.TrimSpace(ctx.Query("minArea"))
-	minArea := repository.SettlementAreaHectaresFromString(strings.ReplaceAll(rawMinArea, ",", "."))
+	rawFoundedBefore := strings.TrimSpace(ctx.Query("foundedBefore"))
+	foundedBefore, err := repository.FoundingDateFromString(rawFoundedBefore)
+	if err != nil {
+		foundedBefore = repository.FoundingDate{}
+		rawFoundedBefore = ""
+	}
 
-	principalities := h.Repository.GetPublishedPrincipalities(minArea)
+	principalities := h.Repository.GetPublishedPrincipalities(foundedBefore)
 	principalityViews := make([]PrincipalityView, 0, len(principalities))
 	for _, principality := range principalities {
 		principalityViews = append(principalityViews, principalityView(principality))
@@ -131,7 +139,7 @@ func (h *Handler) PrincipalityCatalog(ctx *gin.Context) {
 			MinioBaseURL:   h.Config.MinioBaseURL,
 			ActiveTab:      "catalog",
 			Principalities: principalityViews,
-			MinArea:        rawMinArea,
+			FoundedBefore:  rawFoundedBefore,
 			TotalCount:     len(principalityViews),
 		},
 	)
@@ -139,14 +147,15 @@ func (h *Handler) PrincipalityCatalog(ctx *gin.Context) {
 
 func principalityView(principality repository.Principality) PrincipalityView {
 	return PrincipalityView{
-		PrincipalityID:         principality.PrincipalityID.Int(),
-		PrincipalityName:       principality.PrincipalityName,
-		PrincipalitySummary:    principality.PrincipalitySummary,
-		SettlementAreaHectares: principality.SettlementAreaHectares.String(),
-		SettlementType:         principality.SettlementType.Title(),
-		SettlementTypeCode:     principality.SettlementType.String(),
-		ImageKey:               principality.ImageKey,
-		VideoKey:               principality.VideoKey,
-		LikeCount:              principality.LikeCount(),
+		PrincipalityID:       principality.PrincipalityID.Int(),
+		PrincipalityName:     principality.PrincipalityName,
+		PrincipalitySummary:  principality.PrincipalitySummary,
+		FoundingDate:         principality.FoundingDate.String(),
+		FoundingYear:         principality.FoundingDate.YearTitle(),
+		LandCoefficient:      principality.LandCoefficient.String(),
+		LandCoefficientValue: principality.LandCoefficient.InputValue(),
+		ImageKey:             principality.ImageKey,
+		VideoKey:             principality.VideoKey,
+		LikeCount:            principality.LikeCount(),
 	}
 }

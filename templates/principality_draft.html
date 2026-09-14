@@ -12,7 +12,7 @@
     <main class="screen">
         <header class="screen__head">
             <h1 class="screen__title">{{.Title}}</h1>
-            <p class="screen__note">Черновик «{{.Principality.PrincipalityName}}». Заполните краткое описание и параметры, чтобы опубликовать княжество.</p>
+            <p class="screen__note">Черновик «{{.Principality.PrincipalityName}}». Заполните краткое описание, дату основания и коэффициент земли; в этой лабораторной данные не сохраняются.</p>
         </header>
 
         <form class="draft-form">
@@ -59,30 +59,22 @@
             </section>
 
             <section class="draft-form__group">
-                <p class="draft-form__caption">Данные археологии</p>
+                <p class="draft-form__caption">Поля по теме</p>
                 <div class="draft-form__fields">
                     <div class="draft-form__row draft-form__row_stacked">
-                        <label class="draft-form__label" for="settlement_area_hectares">Площадь укреплённой части, га</label>
-                        <input class="draft-form__input" type="text" id="settlement_area_hectares"
-                            name="settlement_area_hectares" inputmode="decimal"
-                            pattern="\d{1,4}([.,]\d{1,2})?" title="Площадь в гектарах, до двух знаков после запятой"
-                            value="{{.Principality.SettlementAreaHectares}}" required>
+                        <label class="draft-form__label" for="founding_date">Дата основания</label>
+                        <input class="draft-form__input" type="date" id="founding_date" name="founding_date"
+                            value="{{.Principality.FoundingDate}}" required>
                     </div>
-                    <div class="draft-form__row">
-                        <label class="draft-form__label" for="settlement_type">Тип поселения</label>
-                        <select class="draft-form__select" id="settlement_type" name="settlement_type" required>
-                            <option value="" {{if eq .Principality.SettlementTypeCode "" }}selected{{end}}>не выбрано</option>
-                            <option value="capital" {{if eq .Principality.SettlementTypeCode "capital" }}selected{{end}}>стольный град
-                            </option>
-                            <option value="fortified_town" {{if eq .Principality.SettlementTypeCode "fortified_town" }}selected{{end}}>окольный
-                                город</option>
-                            <option value="hillfort" {{if eq .Principality.SettlementTypeCode "hillfort" }}selected{{end}}>городище-крепость</option>
-                        </select>
+                    <div class="draft-form__row draft-form__row_stacked">
+                        <label class="draft-form__label" for="land_coefficient">Коэффициент земли</label>
+                        <input class="draft-form__input" type="number" id="land_coefficient" name="land_coefficient"
+                            step="0.01" min="0.01" max="1" inputmode="decimal" placeholder="0,55"
+                            value="{{.Principality.LandCoefficientValue}}" required>
                     </div>
                 </div>
             </section>
 
-            <button class="draft-form__submit" type="button">Опубликовать</button>
         </form>
     </main>
     {{template "tab_bar" .}}

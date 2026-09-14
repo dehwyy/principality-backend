@@ -11,14 +11,14 @@ func NewRepository() (*Repository, error) {
 }
 
 func (r *Repository) GetPublishedPrincipalities(
-	minArea SettlementAreaHectares,
+	foundedBefore FoundingDate,
 ) []Principality {
 	published := make([]Principality, 0, len(r.principalities))
 	for _, principality := range r.principalities {
 		if principality.PrincipalityStatus != PrincipalityStatusPublished {
 			continue
 		}
-		if minArea > 0 && principality.SettlementAreaHectares < minArea {
+		if !foundedBefore.IsZero() && principality.FoundingDate.After(foundedBefore) {
 			continue
 		}
 		published = append(published, principality)
@@ -41,7 +41,7 @@ func (r *Repository) GetPublishedPrincipality(
 func (r *Repository) GetNextPublishedPrincipality(
 	afterID PrincipalityID,
 ) (Principality, error) {
-	published := r.GetPublishedPrincipalities(0)
+	published := r.GetPublishedPrincipalities(FoundingDate{})
 	if len(published) == 0 {
 		return Principality{}, ErrPrincipalityNotFound
 	}
@@ -54,7 +54,7 @@ func (r *Repository) GetNextPublishedPrincipality(
 }
 
 func (r *Repository) GetFirstPublishedPrincipality() (Principality, error) {
-	published := r.GetPublishedPrincipalities(0)
+	published := r.GetPublishedPrincipalities(FoundingDate{})
 	if len(published) == 0 {
 		return Principality{}, ErrPrincipalityNotFound
 	}
