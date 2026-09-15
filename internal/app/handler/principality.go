@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -17,8 +16,8 @@ import (
 
 const (
 	foundingDateLayout = "2006-01-02"
-	defaultImageURL    = "/static/img/principality_default.jpg"
-	defaultVideoURL    = "/static/video/principality_default.mp4"
+	defaultImageURL    = "/static/img/principality_placeholder.jpg"
+	defaultVideoURL    = "/static/video/principality_placeholder.mp4"
 )
 
 type PrincipalityView struct {
@@ -121,9 +120,9 @@ func (h *Handler) PrincipalityDraft(ctx *gin.Context) {
 
 func (h *Handler) PrincipalityCatalog(ctx *gin.Context) {
 	rawFoundedBefore := strings.TrimSpace(ctx.Query("foundedBefore"))
-	foundedBefore := sql.NullTime{}
+	var foundedBefore *time.Time
 	if parsed, err := time.Parse(foundingDateLayout, rawFoundedBefore); err == nil {
-		foundedBefore = sql.NullTime{Time: parsed, Valid: true}
+		foundedBefore = &parsed
 	} else {
 		rawFoundedBefore = ""
 	}
@@ -250,12 +249,12 @@ func (h *Handler) principalityView(principality *ds.Principality, likeCount int6
 		PrincipalitySummary: principality.PrincipalitySummary,
 		LikeCount:           likeCount,
 	}
-	if principality.FoundingDate.Valid {
-		view.FoundingDate = principality.FoundingDate.Time.Format(foundingDateLayout)
-		view.FoundingYear = fmt.Sprintf("%d г.", principality.FoundingDate.Time.Year())
+	if principality.FoundingDate != nil {
+		view.FoundingDate = principality.FoundingDate.Format(foundingDateLayout)
+		view.FoundingYear = fmt.Sprintf("%d г.", principality.FoundingDate.Year())
 	}
-	if principality.LandCoefficient.Valid {
-		view.LandCoefficientValue = fmt.Sprintf("%.2f", principality.LandCoefficient.Float64)
+	if principality.LandCoefficient != nil {
+		view.LandCoefficientValue = fmt.Sprintf("%.2f", *principality.LandCoefficient)
 		view.LandCoefficient = strings.Replace(view.LandCoefficientValue, ".", ",", 1)
 	}
 	if principality.ImageKey != "" {

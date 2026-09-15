@@ -12,11 +12,11 @@ import (
 
 var ErrPrincipalityNotFound = errors.New("княжество не найдено")
 
-func (r *Repository) GetPublishedPrincipalities(foundedBefore sql.NullTime) ([]ds.Principality, error) {
+func (r *Repository) GetPublishedPrincipalities(foundedBefore *time.Time) ([]ds.Principality, error) {
 	var principalities []ds.Principality
 	publishedPrincipalities := r.db.Where("principality_status = ?", ds.PrincipalityStatusPublished)
-	if foundedBefore.Valid {
-		publishedPrincipalities = publishedPrincipalities.Where("founding_date <= ?", foundedBefore.Time)
+	if foundedBefore != nil {
+		publishedPrincipalities = publishedPrincipalities.Where("founding_date <= ?", *foundedBefore)
 	}
 	err := publishedPrincipalities.Order("principality_id").Find(&principalities).Error
 	if err != nil {
@@ -125,7 +125,7 @@ func (r *Repository) PublishPrincipality(
 	result := r.db.Model(&ds.Principality{}).
 		Where("principality_id = ? AND created_by = ? AND principality_status = ?",
 			principalityID, archaeologistID, ds.PrincipalityStatusDraft).
-		Updates(map[string]interface{}{
+		Updates(map[string]any{
 			"principality_summary": principalitySummary,
 			"founding_date":        foundingDate,
 			"land_coefficient":     landCoefficient,
@@ -142,16 +142,21 @@ func (r *Repository) PublishPrincipality(
 }
 
 func (r *Repository) RemovePrincipality(principalityID uint) error {
-	result := r.db.Exec(
-		`UPDATE principality SET principality_status = 'removed' WHERE principality_id = $1 AND principality_status <> 'removed'`,
-		principalityID,
-	)
-	if result.Error != nil {
-		return result.Error
+	removalUpdate := `UPDATE principality SET principality_status = 'removed'
+		WHERE principality_id = $1 AND principality_status <> 'removed'
+		RETURNING principality_id`
+
+	row := r.db.Raw(removalUpdate, principalityID).Row()
+
+	var removedPrincipalityID uint
+	err := row.Scan(&removedPrincipalityID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrPrincipalityNotFound
+		}
+		return err
 	}
-	if result.RowsAffected == 0 {
-		return ErrPrincipalityNotFound
-	}
+
 	return nil
 }
 
