@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -101,18 +102,26 @@ func (r *Repository) GetDraftPrincipality(archaeologistID uint) (*ds.Principalit
 	return &principality, nil
 }
 
-func (r *Repository) CreatePrincipalityDraft(principalityName string, archaeologistID uint) (*ds.Principality, error) {
-	principality := &ds.Principality{
-		PrincipalityName:   principalityName,
-		PrincipalityStatus: ds.PrincipalityStatusDraft,
-		CreatedAt:          time.Now(),
-		CreatedBy:          archaeologistID,
-	}
-	err := r.db.Create(principality).Error
+func (r *Repository) GetPrincipality(principalityID uint) (*ds.Principality, error) {
+	var principality ds.Principality
+	err := r.db.
+		Where("principality_id = ? AND principality_status <> ?", principalityID, ds.PrincipalityStatusRemoved).
+		First(&principality).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrPrincipalityNotFound
+		}
 		return nil, err
 	}
-	return principality, nil
+	return &principality, nil
+}
+
+func (r *Repository) AddPrincipality(principality *ds.Principality) error {
+	err := r.db.Create(principality).Error
+	if err != nil {
+		return fmt.Errorf("ошибка при добавлении княжества: %w", err)
+	}
+	return nil
 }
 
 func (r *Repository) PublishPrincipality(
@@ -157,6 +166,20 @@ func (r *Repository) RemovePrincipality(principalityID uint) error {
 		return err
 	}
 
+	return nil
+}
+
+func (r *Repository) RemovePrincipalityByArchaeologist(principalityID uint, archaeologistID uint) error {
+	result := r.db.Model(&ds.Principality{}).
+		Where("principality_id = ? AND created_by = ? AND principality_status <> ?",
+			principalityID, archaeologistID, ds.PrincipalityStatusRemoved).
+		Update("principality_status", ds.PrincipalityStatusRemoved)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return ErrPrincipalityNotFound
+	}
 	return nil
 }
 

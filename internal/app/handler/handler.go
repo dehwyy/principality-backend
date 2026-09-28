@@ -27,6 +27,11 @@ func (h *Handler) RegisterHandler(router *gin.Engine) {
 	router.POST("/principalities/draft", h.CreatePrincipalityDraft)
 	router.POST("/principalities/:principalityId/publish", h.PublishPrincipality)
 	router.POST("/principalities/:principalityId/remove", h.RemovePrincipality)
+
+	router.GET("/api/principalities", h.GetPrincipalitiesAPI)
+	router.GET("/api/principalities/feed", h.GetPrincipalityFeedAPI)
+	router.GET("/api/principalities/feed/:principalityId", h.GetPrincipalityFeedAPI)
+	router.GET("/api/principalities/draft", h.GetPrincipalityDraftAPI)
 }
 
 func (h *Handler) RegisterStatic(router *gin.Engine) {

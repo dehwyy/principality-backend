@@ -120,13 +120,7 @@ func (h *Handler) PrincipalityDraft(ctx *gin.Context) {
 }
 
 func (h *Handler) PrincipalityCatalog(ctx *gin.Context) {
-	rawFoundedBefore := strings.TrimSpace(ctx.Query("foundedBefore"))
-	var foundedBefore *time.Time
-	if parsed, err := time.Parse(foundingDateLayout, rawFoundedBefore); err == nil {
-		foundedBefore = &parsed
-	} else {
-		rawFoundedBefore = ""
-	}
+	foundedBefore, rawFoundedBefore := parseFoundedBefore(ctx)
 
 	principalities, err := h.Repository.GetPublishedPrincipalities(foundedBefore)
 	if err != nil {
@@ -170,7 +164,12 @@ func (h *Handler) CreatePrincipalityDraft(ctx *gin.Context) {
 		return
 	}
 	if existingDraft == nil {
-		_, err = h.Repository.CreatePrincipalityDraft(principalityName, auth.CurrentArchaeologist().ArchaeologistID)
+		err = h.Repository.AddPrincipality(&ds.Principality{
+			PrincipalityName:   principalityName,
+			PrincipalityStatus: ds.PrincipalityStatusDraft,
+			CreatedAt:          time.Now(),
+			CreatedBy:          auth.CurrentArchaeologist().ArchaeologistID,
+		})
 		if err != nil {
 			h.errorHandler(ctx, http.StatusInternalServerError, err)
 			return
@@ -259,10 +258,10 @@ func (h *Handler) principalityView(principality *ds.Principality, likeCount int6
 		view.LandCoefficient = strings.Replace(view.LandCoefficientValue, ".", ",", 1)
 	}
 	if principality.ImageKey != "" {
-		view.ImageURL = h.Config.MinioBaseURL + "/" + h.Config.MinioBucketName + "/" + principality.ImageKey
+		view.ImageURL = h.principalityMediaURL(principality.ImageKey)
 	}
 	if principality.VideoKey != "" {
-		view.VideoURL = h.Config.MinioBaseURL + "/" + h.Config.MinioBucketName + "/" + principality.VideoKey
+		view.VideoURL = h.principalityMediaURL(principality.VideoKey)
 	}
 	return view
 }
