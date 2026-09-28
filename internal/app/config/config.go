@@ -9,9 +9,10 @@ import (
 )
 
 type Config struct {
-	ServiceHost  string
-	ServicePort  int
-	MinioBaseURL string
+	ServiceHost     string
+	ServicePort     int
+	MinioBaseURL    string
+	MinioBucketName string
 }
 
 func NewConfig() (*Config, error) {

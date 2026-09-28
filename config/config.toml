@@ -1,3 +1,4 @@
 ServiceHost = "0.0.0.0"
 ServicePort = 8080
 MinioBaseURL = "http://localhost:9000"
+MinioBucketName = "principality-media"

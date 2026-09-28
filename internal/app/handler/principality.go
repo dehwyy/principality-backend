@@ -259,10 +259,10 @@ func (h *Handler) principalityView(principality *ds.Principality, likeCount int6
 		view.LandCoefficient = strings.Replace(view.LandCoefficientValue, ".", ",", 1)
 	}
 	if principality.ImageKey != "" {
-		view.ImageURL = h.Config.MinioBaseURL + "/principality-media/" + principality.ImageKey
+		view.ImageURL = h.Config.MinioBaseURL + "/" + h.Config.MinioBucketName + "/" + principality.ImageKey
 	}
 	if principality.VideoKey != "" {
-		view.VideoURL = h.Config.MinioBaseURL + "/principality-media/" + principality.VideoKey
+		view.VideoURL = h.Config.MinioBaseURL + "/" + h.Config.MinioBucketName + "/" + principality.VideoKey
 	}
 	return view
 }
