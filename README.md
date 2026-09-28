@@ -45,7 +45,7 @@ go run ./cmd/principality-web
 
 | Метод | URL | Назначение | Вход | Ответ | Коды |
 |---|---|---|---|---|---|
-| GET | `/api/principalities?foundedBefore=ГГГГ-ММ-ДД` | Список опубликованных княжеств с фильтром по дате основания | query `foundedBefore`, необязательный | Массив княжеств с URL медиа, числом лайков и признаком `created_by_current_archaeologist` (0/1) | 200, 500 |
+| GET | `/api/principalities?foundedBefore=ГГГГ-ММ-ДД` | Список опубликованных княжеств с фильтром по дате основания | query `foundedBefore`, необязательный | Массив княжеств с URL медиа, числом лайков и признаком `created_by_current_archaeologist` (0/1) | 200, 400, 500 |
 | GET | `/api/principalities/feed`, `/api/principalities/feed/{principalityId}?next=true` | Лента: первое опубликованное княжество, княжество по ид или следующее после него | path `principalityId`, query `next` | Княжество с URL медиа, числом лайков и `next_principality_id` | 200, 400, 404, 500 |
 | GET | `/api/principalities/draft` | Черновик текущего археолога | нет | Княжество-черновик с URL медиа | 200, 404, 500 |
 | POST | `/api/principalities` | Создание черновика с изображением и видео | multipart: `principality_name`, файлы `principality_image`, `principality_video` | Созданный черновик; ключи файлов в `image_key` и `video_key` сгенерированы на латинице | 201, 400, 409, 500 |
