@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 
 	"github.com/dehwyy/principality-backend/internal/app/auth"
 	"github.com/dehwyy/principality-backend/internal/app/ds"
@@ -104,6 +105,102 @@ func (h *Handler) GetPrincipalityDraftAPI(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, h.principalitySerializer(principality))
+}
+
+func (h *Handler) AddPrincipalityAPI(ctx *gin.Context) {
+	err := ctx.Request.ParseMultipartForm(32 << 20)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	principalityName := strings.TrimSpace(ctx.Request.FormValue("principality_name"))
+	if principalityName == "" {
+		h.errorHandler(ctx, http.StatusBadRequest, errors.New("название княжества не заполнено"))
+		return
+	}
+
+	currentArchaeologistID := auth.CurrentArchaeologist().ArchaeologistID
+	existingDraft, err := h.Repository.GetDraftPrincipality(currentArchaeologistID)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	if existingDraft != nil {
+		h.errorHandler(ctx, http.StatusConflict, errors.New("у археолога уже есть черновик княжества"))
+		return
+	}
+
+	imageHeader, err := ctx.FormFile("principality_image")
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, errors.New("нужен файл изображения княжества"))
+		return
+	}
+	imageType, code, err := validateFileUpload(imageHeader, isImage)
+	if err != nil {
+		h.errorHandler(ctx, code, err)
+		return
+	}
+
+	videoHeader, err := ctx.FormFile("principality_video")
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, errors.New("нужен файл видео княжества"))
+		return
+	}
+	videoType, code, err := validateFileUpload(videoHeader, isVideo)
+	if err != nil {
+		h.errorHandler(ctx, code, err)
+		return
+	}
+
+	imageKey, err := repository.NewPrincipalityMediaKey(imageType)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	videoKey, err := repository.NewPrincipalityMediaKey(videoType)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	err = h.Repository.UploadPrincipalityMedia(imageHeader, imageKey)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	err = h.Repository.UploadPrincipalityMedia(videoHeader, videoKey)
+	if err != nil {
+		h.removePrincipalityMedia(imageKey)
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	principality := ds.Principality{
+		PrincipalityName:   principalityName,
+		PrincipalityStatus: ds.PrincipalityStatusDraft,
+		ImageKey:           imageKey,
+		VideoKey:           videoKey,
+		CreatedAt:          time.Now(),
+		CreatedBy:          currentArchaeologistID,
+	}
+	err = h.Repository.AddPrincipality(&principality)
+	if err != nil {
+		h.removePrincipalityMedia(imageKey, videoKey)
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, h.principalitySerializer(&principality))
+}
+
+func (h *Handler) removePrincipalityMedia(mediaKeys ...string) {
+	for _, mediaKey := range mediaKeys {
+		err := h.Repository.RemovePrincipalityMedia(mediaKey)
+		if err != nil {
+			logrus.Error(err.Error())
+		}
+	}
 }
 
 func (h *Handler) principalitySerializer(principality *ds.Principality) ds.PrincipalitySerializer {
