@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/dehwyy/principality-backend/internal/app/auth"
 	"github.com/dehwyy/principality-backend/internal/app/ds"
 	"github.com/dehwyy/principality-backend/internal/app/repository"
 )
@@ -98,7 +99,7 @@ func (h *Handler) PrincipalityFeed(ctx *gin.Context) {
 }
 
 func (h *Handler) PrincipalityDraft(ctx *gin.Context) {
-	principality, err := h.Repository.GetDraftPrincipality(ds.CurrentArchaeologist())
+	principality, err := h.Repository.GetDraftPrincipality(auth.CurrentArchaeologist().ArchaeologistID)
 	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
 		return
@@ -163,13 +164,13 @@ func (h *Handler) CreatePrincipalityDraft(ctx *gin.Context) {
 		return
 	}
 
-	existingDraft, err := h.Repository.GetDraftPrincipality(ds.CurrentArchaeologist())
+	existingDraft, err := h.Repository.GetDraftPrincipality(auth.CurrentArchaeologist().ArchaeologistID)
 	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
 		return
 	}
 	if existingDraft == nil {
-		_, err = h.Repository.CreatePrincipalityDraft(principalityName, ds.CurrentArchaeologist())
+		_, err = h.Repository.CreatePrincipalityDraft(principalityName, auth.CurrentArchaeologist().ArchaeologistID)
 		if err != nil {
 			h.errorHandler(ctx, http.StatusInternalServerError, err)
 			return
@@ -198,7 +199,7 @@ func (h *Handler) PublishPrincipality(ctx *gin.Context) {
 
 	err = h.Repository.PublishPrincipality(
 		uint(principalityID),
-		ds.CurrentArchaeologist(),
+		auth.CurrentArchaeologist().ArchaeologistID,
 		principalitySummary,
 		foundingDate,
 		landCoefficient,
