@@ -33,6 +33,9 @@ func (h *Handler) RegisterHandler(router *gin.Engine) {
 	router.GET("/api/principalities/feed/:principalityId", h.GetPrincipalityFeedAPI)
 	router.GET("/api/principalities/draft", h.GetPrincipalityDraftAPI)
 	router.POST("/api/principalities", h.AddPrincipalityAPI)
+	router.PUT("/api/principalities/:principalityId/publish", h.PublishPrincipalityAPI)
+	router.DELETE("/api/principalities/:principalityId", h.DeletePrincipalityAPI)
+	router.POST("/api/principalities/:principalityId/like", h.LikePrincipalityAPI)
 }
 
 func (h *Handler) RegisterStatic(router *gin.Engine) {

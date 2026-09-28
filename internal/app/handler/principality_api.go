@@ -194,6 +194,171 @@ func (h *Handler) AddPrincipalityAPI(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, h.principalitySerializer(&principality))
 }
 
+func (h *Handler) PublishPrincipalityAPI(ctx *gin.Context) {
+	principalityID, ok := h.parsePrincipalityID(ctx)
+	if !ok {
+		return
+	}
+
+	principality, err := h.Repository.GetPrincipality(principalityID)
+	if err != nil {
+		if errors.Is(err, repository.ErrPrincipalityNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+			return
+		}
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	currentArchaeologistID := auth.CurrentArchaeologist().ArchaeologistID
+	if principality.CreatedBy != currentArchaeologistID {
+		h.errorHandler(ctx, http.StatusForbidden, errors.New("княжество создано другим археологом"))
+		return
+	}
+	if principality.PrincipalityStatus != ds.PrincipalityStatusDraft {
+		h.errorHandler(ctx, http.StatusConflict, errors.New("опубликовать можно только черновик княжества"))
+		return
+	}
+
+	var publication ds.PrincipalityPublication
+	if err := ctx.ShouldBindJSON(&publication); err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	principalitySummary := strings.TrimSpace(publication.PrincipalitySummary)
+	if principalitySummary == "" {
+		h.errorHandler(ctx, http.StatusBadRequest, errors.New("описание княжества не заполнено"))
+		return
+	}
+	foundingDate, err := time.Parse(foundingDateLayout, publication.FoundingDate)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, errors.New("дата основания княжества должна быть в формате ГГГГ-ММ-ДД"))
+		return
+	}
+	if publication.LandCoefficient <= 0 || publication.LandCoefficient > 1 {
+		h.errorHandler(ctx, http.StatusBadRequest, errors.New("коэффициент земли должен быть больше 0 и не больше 1"))
+		return
+	}
+
+	err = h.Repository.PublishPrincipality(
+		principalityID,
+		currentArchaeologistID,
+		principalitySummary,
+		foundingDate,
+		publication.LandCoefficient,
+	)
+	if err != nil {
+		if errors.Is(err, repository.ErrPrincipalityNotFound) {
+			h.errorHandler(ctx, http.StatusConflict, errors.New("опубликовать можно только черновик княжества"))
+			return
+		}
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	publishedPrincipality, err := h.Repository.GetPrincipality(principalityID)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, h.principalitySerializer(publishedPrincipality))
+}
+
+func (h *Handler) DeletePrincipalityAPI(ctx *gin.Context) {
+	principalityID, ok := h.parsePrincipalityID(ctx)
+	if !ok {
+		return
+	}
+
+	principality, err := h.Repository.GetPrincipality(principalityID)
+	if err != nil {
+		if errors.Is(err, repository.ErrPrincipalityNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+			return
+		}
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	currentArchaeologistID := auth.CurrentArchaeologist().ArchaeologistID
+	if principality.CreatedBy != currentArchaeologistID {
+		h.errorHandler(ctx, http.StatusForbidden, errors.New("княжество создано другим археологом"))
+		return
+	}
+
+	err = h.Repository.RemovePrincipalityByArchaeologist(principalityID, currentArchaeologistID)
+	if err != nil {
+		if errors.Is(err, repository.ErrPrincipalityNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+			return
+		}
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"message": "княжество удалено",
+	})
+}
+
+func (h *Handler) LikePrincipalityAPI(ctx *gin.Context) {
+	principalityID, ok := h.parsePrincipalityID(ctx)
+	if !ok {
+		return
+	}
+
+	var likeMark ds.PrincipalityLikeMark
+	if err := ctx.ShouldBindJSON(&likeMark); err != nil {
+		h.errorHandler(ctx, http.StatusBadRequest, err)
+		return
+	}
+	principalityLiked := *likeMark.PrincipalityLiked
+	if principalityLiked != 0 && principalityLiked != 1 {
+		h.errorHandler(ctx, http.StatusBadRequest, errors.New("principality_liked принимает 0 или 1"))
+		return
+	}
+
+	principality, err := h.Repository.GetPrincipality(principalityID)
+	if err != nil {
+		if errors.Is(err, repository.ErrPrincipalityNotFound) {
+			h.errorHandler(ctx, http.StatusNotFound, err)
+			return
+		}
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	if principality.PrincipalityStatus != ds.PrincipalityStatusPublished {
+		h.errorHandler(ctx, http.StatusNotFound, repository.ErrPrincipalityNotFound)
+		return
+	}
+
+	currentArchaeologistID := auth.CurrentArchaeologist().ArchaeologistID
+	if principalityLiked == 1 {
+		err = h.Repository.SetPrincipalityLike(principalityID, currentArchaeologistID)
+	} else {
+		err = h.Repository.UnsetPrincipalityLike(principalityID, currentArchaeologistID)
+	}
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	likeCount, err := h.Repository.CountPrincipalityLikesByID(principalityID)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ds.PrincipalityLikeSerializer{
+		PrincipalityID:        principalityID,
+		PrincipalityLiked:     principalityLiked,
+		PrincipalityLikeCount: likeCount,
+	})
+}
+
 func (h *Handler) removePrincipalityMedia(mediaKeys ...string) {
 	for _, mediaKey := range mediaKeys {
 		err := h.Repository.RemovePrincipalityMedia(mediaKey)
