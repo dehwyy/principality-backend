@@ -41,6 +41,8 @@ func NewConfig() (*Config, error) {
 		return nil, err
 	}
 
+	cfg.MinioBucketName = os.Getenv("MINIO_BUCKET_NAME")
+
 	log.Info("config parsed")
 
 	return cfg, nil

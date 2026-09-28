@@ -27,35 +27,17 @@ func (r *Repository) GetPublishedPrincipalities(foundedBefore *time.Time) ([]ds.
 }
 
 func (r *Repository) GetPublishedPrincipality(principalityID uint) (*ds.Principality, error) {
-	principalitySelect := `SELECT principality_id, principality_name, principality_summary, principality_status,
-		image_key, video_key, founding_date, land_coefficient, created_at, published_at, created_by
-		FROM principality WHERE principality_id = $1 AND principality_status = $2`
-
-	row := r.db.Raw(principalitySelect, principalityID, ds.PrincipalityStatusPublished).Row()
-
-	principality := &ds.Principality{}
-
-	err := row.Scan(
-		&principality.PrincipalityID,
-		&principality.PrincipalityName,
-		&principality.PrincipalitySummary,
-		&principality.PrincipalityStatus,
-		&principality.ImageKey,
-		&principality.VideoKey,
-		&principality.FoundingDate,
-		&principality.LandCoefficient,
-		&principality.CreatedAt,
-		&principality.PublishedAt,
-		&principality.CreatedBy,
-	)
+	var principality ds.Principality
+	err := r.db.
+		Where("principality_id = ? AND principality_status = ?", principalityID, ds.PrincipalityStatusPublished).
+		First(&principality).Error
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrPrincipalityNotFound
 		}
 		return nil, err
 	}
-
-	return principality, nil
+	return &principality, nil
 }
 
 func (r *Repository) GetFirstPublishedPrincipality() (*ds.Principality, error) {

@@ -27,7 +27,7 @@ func main() {
 		MinioEndpoint:   os.Getenv("MINIO_ENDPOINT"),
 		MinioAccessKey:  os.Getenv("MINIO_ACCESS_KEY"),
 		MinioSecretKey:  os.Getenv("MINIO_SECRET_KEY"),
-		MinioBucketName: conf.MinioBucketName,
+		MinioBucketName: os.Getenv("MINIO_BUCKET_NAME"),
 	})
 	if errRep != nil {
 		logrus.Fatalf("error initializing repository: %v", errRep)

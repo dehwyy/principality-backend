@@ -35,7 +35,7 @@ go run ./cmd/principality-web
 
 Медиа десяти княжеств из сида кладутся в бакет `principality-media` под именами из столбцов `image_key` и `video_key` (`kiev.jpg`, `kiev.mp4` и так далее), например через `mc cp`. Сервер слушает `http://localhost:8080`, Adminer доступен на `http://localhost:8081`, консоль Minio на `http://localhost:9001`.
 
-В `.env` задаются подключение к PostgreSQL (`DB_*`) и ключи Minio (`MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`). Имя бакета и адрес, по которому клиент получает файлы, лежат в `config/config.toml`.
+В `.env` задаются подключение к PostgreSQL (`DB_*`) и Minio (`MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET_NAME`). Адрес, по которому клиент получает файлы, лежит в `config/config.toml`.
 
 ## HTTP-методы
 

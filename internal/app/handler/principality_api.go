@@ -17,6 +17,10 @@ import (
 
 func (h *Handler) GetPrincipalitiesAPI(ctx *gin.Context) {
 	foundedBefore, _ := parseFoundedBefore(ctx)
+	if foundedBefore == nil && ctx.Query("foundedBefore") != "" {
+		h.errorHandler(ctx, http.StatusBadRequest, errors.New("дата основания должна быть в формате ГГГГ-ММ-ДД"))
+		return
+	}
 
 	principalities, err := h.Repository.GetPublishedPrincipalities(foundedBefore)
 	if err != nil {
