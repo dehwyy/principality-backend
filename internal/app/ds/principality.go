@@ -13,8 +13,8 @@ type Principality struct {
 	PrincipalityName    string     `gorm:"type:varchar(120);not null"`
 	PrincipalitySummary string     `gorm:"type:varchar(600)"`
 	PrincipalityStatus  string     `gorm:"type:varchar(16);not null;default:'draft'"`
-	ImageKey            string     `gorm:"type:varchar(80)"`
-	VideoKey            string     `gorm:"type:varchar(80)"`
+	ImageKey            string     `gorm:"type:varchar(80);not null"`
+	VideoKey            string     `gorm:"type:varchar(80);not null"`
 	FoundingDate        *time.Time `gorm:"type:date"`
 	LandCoefficient     *float64   `gorm:"type:numeric(4,2)"`
 	CreatedAt           time.Time  `gorm:"not null"`

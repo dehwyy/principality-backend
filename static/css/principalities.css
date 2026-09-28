@@ -170,7 +170,9 @@ body {
     min-height: 32px;
 }
 
-.principalities-filter__submit {
+.principalities-filter__submit,
+.principality-card__remove-button,
+.draft-form__submit {
     padding: 8px 16px;
     border: 0;
     border-radius: var(--radius-principality);
@@ -184,7 +186,9 @@ body {
     transition: transform var(--motion), opacity var(--motion);
 }
 
-.principalities-filter__submit:active {
+.principalities-filter__submit:active,
+.principality-card__remove-button:active,
+.draft-form__submit:active {
     transform: scale(.97);
     opacity: .85;
 }
@@ -372,6 +376,16 @@ body {
     fill: var(--feed-like);
 }
 
+.feed__action-glyph_next {
+    box-sizing: border-box;
+    width: 46px;
+    height: 46px;
+    padding: 10px;
+    border-radius: 999px;
+    background: var(--primary);
+    fill: var(--on-primary);
+}
+
 .feed__overlay {
     position: absolute;
     right: 104px;
@@ -530,6 +544,7 @@ body {
 }
 
 .draft-form__media {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -569,16 +584,22 @@ body {
 
 .draft-form__replace {
     flex: none;
-    padding: 4px 10px;
-    border-radius: 999px;
+    padding: 8px 16px;
+    border-radius: var(--radius-principality);
     background: var(--primary);
     color: var(--on-primary);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
+    letter-spacing: -.01em;
 }
 
 .draft-form__file {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
 }
 
 .draft-form__input::placeholder,
@@ -596,33 +617,9 @@ body {
     font-weight: 400;
 }
 
-.draft-form__submit:disabled,
-.draft-form:has(:invalid) .draft-form__submit {
-    background: var(--control);
-    color: rgba(26, 26, 26, .35);
-    pointer-events: none;
-}
-
 .draft-form__submit {
     display: block;
-    width: 100%;
-    margin-top: 24px;
-    padding: 15px;
-    border: 0;
-    border-radius: var(--radius-principality);
-    background: var(--primary);
-    color: var(--on-primary);
-    font-family: inherit;
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: -.01em;
-    cursor: pointer;
-    transition: transform var(--motion), opacity var(--motion);
-}
-
-.draft-form__submit:active {
-    transform: scale(.99);
-    opacity: .85;
+    margin: 24px 0 0 auto;
 }
 
 .principality-card {
@@ -655,35 +652,6 @@ body {
     top: 8px;
     left: 8px;
     margin: 0;
-}
-
-.principality-card__remove-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    border: 0;
-    border-radius: 999px;
-    background: rgba(26, 26, 26, .72);
-    color: #FFFFFF;
-    cursor: pointer;
-    transition: transform var(--motion), background var(--motion);
-}
-
-.principality-card__remove-button:hover {
-    background: var(--foreground);
-}
-
-.principality-card__remove-button:active {
-    transform: scale(.92);
-}
-
-.principality-card__remove-glyph {
-    width: 16px;
-    height: 16px;
-    fill: currentColor;
 }
 
 .draft-form__preview {

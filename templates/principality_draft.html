@@ -13,7 +13,7 @@
         <header class="screen__head">
             <h1 class="screen__title">{{.Title}}</h1>
             {{if .HasDraft}}
-            <p class="screen__note">Черновик «{{.Principality.PrincipalityName}}». Заполните краткое описание, дату основания и коэффициент земли, затем нажмите «Опубликовать».</p>
+            <p class="screen__note">Черновик «{{.Principality.PrincipalityName}}». Заполните описание, дату основания и коэффициент земли, затем нажмите «Опубликовать».</p>
             {{else}}
             <p class="screen__note">Укажите название, фото и видео княжества и нажмите «Далее», чтобы создать черновик.</p>
             {{end}}
@@ -25,26 +25,35 @@
         <form class="draft-form" method="post" action="/principalities/draft">
         {{end}}
             <section class="draft-form__group">
+                <div class="draft-form__fields">
+                    <div class="draft-form__row draft-form__row_stacked">
+                        <label class="draft-form__label" for="principality_name">Название княжества</label>
+                        <input class="draft-form__input" type="text" id="principality_name" name="principality_name"
+                            value="{{.Principality.PrincipalityName}}" {{if .HasDraft}}readonly{{else}}required{{end}}>
+                    </div>
+                </div>
+            </section>
+
+            <section class="draft-form__group">
                 <p class="draft-form__caption">Медиа</p>
                 <div class="draft-form__fields">
                     <label class="draft-form__media">
                         <span class="draft-form__preview" role="img" aria-label="Изображение княжества"
-                            style="background-image: {{if .Principality.ImageURL}}url('{{.Principality.ImageURL}}'), {{end}}url('{{.DefaultImageURL}}')"></span>
+                            style="background-image: url('{{.DefaultImageURL}}')"></span>
                         <span class="draft-form__media-body">
                             <span class="draft-form__label">Изображение</span>
-                            <span class="draft-form__filename">{{if .Principality.ImageURL}}из хранилища{{else}}по умолчанию{{end}}</span>
+                            <span class="draft-form__filename">по умолчанию</span>
                         </span>
                         <span class="draft-form__replace">Выбрать</span>
                         <input class="draft-form__file" type="file" accept="image/*">
                     </label>
                     <label class="draft-form__media">
                         <video class="draft-form__preview" preload="metadata" muted playsinline>
-                            {{if .Principality.VideoURL}}<source src="{{.Principality.VideoURL}}#t=0.5" type="video/mp4">{{end}}
                             <source src="{{.DefaultVideoURL}}#t=0.5" type="video/mp4">
                         </video>
                         <span class="draft-form__media-body">
                             <span class="draft-form__label">Видео</span>
-                            <span class="draft-form__filename">{{if .Principality.VideoURL}}из хранилища{{else}}по умолчанию{{end}}</span>
+                            <span class="draft-form__filename">по умолчанию</span>
                         </span>
                         <span class="draft-form__replace">Выбрать</span>
                         <input class="draft-form__file" type="file" accept="video/*">
@@ -52,27 +61,21 @@
                 </div>
             </section>
 
+            {{if .HasDraft}}
             <section class="draft-form__group">
-                <p class="draft-form__caption">Описание</p>
                 <div class="draft-form__fields">
                     <div class="draft-form__row draft-form__row_stacked">
-                        <label class="draft-form__label" for="principality_name">Название княжества</label>
-                        <input class="draft-form__input" type="text" id="principality_name" name="principality_name"
-                            value="{{.Principality.PrincipalityName}}" {{if .HasDraft}}readonly{{else}}required{{end}}>
-                    </div>
-                    {{if .HasDraft}}
-                    <div class="draft-form__row draft-form__row_stacked">
-                        <label class="draft-form__label" for="principality_summary">Краткое описание</label>
-                        <textarea class="draft-form__input" id="principality_summary" name="principality_summary" rows="3"
+                        <label class="draft-form__label" for="principality_summary">Описание</label>
+                        <textarea class="draft-form__input" id="principality_summary" name="principality_summary" rows="4"
                             placeholder="Что известно об укреплениях и застройке по раскопкам" required>{{.Principality.PrincipalitySummary}}</textarea>
                     </div>
-                    {{end}}
                 </div>
             </section>
+            {{end}}
 
             {{if .HasDraft}}
             <section class="draft-form__group">
-                <p class="draft-form__caption">Поля по теме</p>
+                <p class="draft-form__caption">Детали</p>
                 <div class="draft-form__fields">
                     <div class="draft-form__row draft-form__row_stacked">
                         <label class="draft-form__label" for="founding_date">Дата основания</label>
