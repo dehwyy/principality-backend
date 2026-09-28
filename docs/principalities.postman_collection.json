@@ -1,0 +1,285 @@
+{
+  "info": {
+    "name": "Княжества Древней Руси — веб-сервис",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Домен княжества",
+      "item": [
+        {
+          "name": "Список княжеств с фильтром по дате основания",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/principalities?foundedBefore=1100-01-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "principalities"
+              ],
+              "query": [
+                {
+                  "key": "foundedBefore",
+                  "value": "1100-01-01"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Добавление княжества с изображением и видео",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/principalities",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "principalities"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "principality_name",
+                  "value": "Новгородская земля",
+                  "type": "text"
+                },
+                {
+                  "key": "principality_image",
+                  "type": "file",
+                  "src": "novgorod.jpg"
+                },
+                {
+                  "key": "principality_video",
+                  "type": "file",
+                  "src": "novgorod.mp4"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Черновик княжества текущего археолога",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/principalities/draft",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "principalities",
+                "draft"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Публикация княжества",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/principalities/11/publish",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "principalities",
+                "11",
+                "publish"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"principality_summary\": \"Новгород на Волхове: Детинец на Софийской стороне и Торговая сторона с Ярославовым дворищем, в XIV веке обнесённые валом Окольного города. Мостовые и берестяные грамоты Неревского раскопа дают самую подробную картину усадебной застройки Руси.\",\n  \"founding_date\": \"1136-01-01\",\n  \"land_coefficient\": 0.55\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Лента княжеств (без ид и по ид ?next=true)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/principalities/feed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "principalities",
+                "feed"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Лайк княжества",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/principalities/2/like",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "principalities",
+                "2",
+                "like"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"principality_liked\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Удаление княжества",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/principalities/11",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "principalities",
+                "11"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Домен археолога",
+      "item": [
+        {
+          "name": "Регистрация археолога",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/archaeologists",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "archaeologists"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"archaeologist_login\": \"b.rybakov\",\n  \"archaeologist_password\": \"rybakov_remeslo_1948\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Аутентификация археолога (заглушка)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/archaeologists/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "archaeologists",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"archaeologist_login\": \"a.kuza\",\n  \"archaeologist_password\": \"kuza_gorodishcha_1996\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Деавторизация археолога (заглушка)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/archaeologists/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "archaeologists",
+                "logout"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
