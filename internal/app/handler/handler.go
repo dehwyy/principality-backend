@@ -36,6 +36,9 @@ func (h *Handler) RegisterHandler(router *gin.Engine) {
 	router.PUT("/api/principalities/:principalityId/publish", h.PublishPrincipalityAPI)
 	router.DELETE("/api/principalities/:principalityId", h.DeletePrincipalityAPI)
 	router.POST("/api/principalities/:principalityId/like", h.LikePrincipalityAPI)
+	router.POST("/api/archaeologists", h.RegisterArchaeologistAPI)
+	router.POST("/api/archaeologists/login", h.LoginArchaeologistAPI)
+	router.POST("/api/archaeologists/logout", h.LogoutArchaeologistAPI)
 }
 
 func (h *Handler) RegisterStatic(router *gin.Engine) {
