@@ -199,28 +199,14 @@ func (h *Handler) AddPrincipalityAPI(ctx *gin.Context) {
 }
 
 func (h *Handler) PublishPrincipalityAPI(ctx *gin.Context) {
-	principalityID, ok := h.parsePrincipalityID(ctx)
-	if !ok {
-		return
-	}
-
-	principality, err := h.Repository.GetPrincipality(principalityID)
+	currentArchaeologistID := auth.CurrentArchaeologist().ArchaeologistID
+	draft, err := h.Repository.GetDraftPrincipality(currentArchaeologistID)
 	if err != nil {
-		if errors.Is(err, repository.ErrPrincipalityNotFound) {
-			h.errorHandler(ctx, http.StatusNotFound, err)
-			return
-		}
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
 		return
 	}
-
-	currentArchaeologistID := auth.CurrentArchaeologist().ArchaeologistID
-	if principality.CreatedBy != currentArchaeologistID {
-		h.errorHandler(ctx, http.StatusForbidden, errors.New("княжество создано другим археологом"))
-		return
-	}
-	if principality.PrincipalityStatus != ds.PrincipalityStatusDraft {
-		h.errorHandler(ctx, http.StatusConflict, errors.New("опубликовать можно только черновик княжества"))
+	if draft == nil {
+		h.errorHandler(ctx, http.StatusNotFound, errors.New("у археолога нет черновика княжества"))
 		return
 	}
 
@@ -246,7 +232,7 @@ func (h *Handler) PublishPrincipalityAPI(ctx *gin.Context) {
 	}
 
 	err = h.Repository.PublishPrincipality(
-		principalityID,
+		draft.PrincipalityID,
 		currentArchaeologistID,
 		principalitySummary,
 		foundingDate,
@@ -261,7 +247,7 @@ func (h *Handler) PublishPrincipalityAPI(ctx *gin.Context) {
 		return
 	}
 
-	publishedPrincipality, err := h.Repository.GetPrincipality(principalityID)
+	publishedPrincipality, err := h.Repository.GetPrincipality(draft.PrincipalityID)
 	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
 		return

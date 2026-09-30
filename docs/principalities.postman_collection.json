@@ -102,14 +102,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/principalities/11/publish",
+              "raw": "{{baseUrl}}/api/principalities/draft/publish",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "principalities",
-                "11",
+                "draft",
                 "publish"
               ]
             },
