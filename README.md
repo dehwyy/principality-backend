@@ -61,6 +61,26 @@ go run ./cmd/principality-web
 | POST | `/api/archaeologists/login` | Аутентификация, заглушка до лабораторной 4 | JSON: `archaeologist_login`, `archaeologist_password` | `{"status": "success", "message": "..."}` | 200, 400 |
 | POST | `/api/archaeologists/logout` | Деавторизация, заглушка до лабораторной 4 | нет | `{"status": "success", "message": "..."}` | 200 |
 
+### Объект княжества в ответах
+
+Черновик, создание и публикация возвращают базовый объект. Список добавляет `created_by_current_archaeologist` и `principality_like_count`, лента добавляет `principality_like_count` и `next_principality_id`.
+
+| Поле | Тип | Смысл |
+|---|---|---|
+| `principality_id` | число | Идентификатор |
+| `principality_name` | строка | Название |
+| `principality_summary` | строка | Описание раскопок, у черновика пустое |
+| `principality_status` | строка | `draft` или `published` |
+| `image_key`, `video_key` | строка | Имена файлов в Minio |
+| `principality_image_url`, `principality_video_url` | строка | Полные URL медиа для клиента |
+| `founding_date` | строка RFC 3339 | Дата основания, у черновика `null` |
+| `land_coefficient` | число | Коэффициент застроенной земли, у черновика `null` |
+| `created_at`, `published_at` | строка RFC 3339 | Создание и публикация, `published_at` у черновика `null` |
+| `created_by` | число | Идентификатор археолога-создателя |
+| `created_by_current_archaeologist` | 0 или 1 | Создал ли княжество текущий археолог, только в списке |
+| `principality_like_count` | число | Сколько лайков, в списке и ленте |
+| `next_principality_id` | число | Следующее княжество ленты для кнопки «Далее»; после последнего лента начинается с первого |
+
 ### Страницы на шаблонах (лабораторные 1 и 2)
 
 | Метод | URL | Страница |
