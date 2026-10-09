@@ -46,7 +46,7 @@ go run ./cmd/principality-web
 | Метод | URL | Назначение | Вход | Ответ | Коды |
 |---|---|---|---|---|---|
 | GET | `/api/principalities?foundedBefore=ГГГГ-ММ-ДД` | Список опубликованных княжеств с фильтром по дате основания | query `foundedBefore`, необязательный | Массив княжеств с URL медиа, числом лайков и признаком `created_by_current_archaeologist` (0/1) | 200, 400, 500 |
-| GET | `/api/principalities/feed`, `/api/principalities/feed/{principalityId}?next=true` | Лента: первое опубликованное княжество, княжество по ид или следующее после него | path `principalityId`, query `next` | Княжество с URL медиа, числом лайков и `next_principality_id` | 200, 400, 404, 500 |
+| GET | `/api/principalities/feed`, `/api/principalities/feed/{principalityId}?next=true` | Лента: первое опубликованное княжество, княжество по ид или следующее после него; после последнего лента начинается с первого | path `principalityId`, query `next` | Княжество с URL медиа, числом лайков и признаком `principality_liked` (0/1) | 200, 400, 404, 500 |
 | GET | `/api/principalities/draft` | Черновик текущего археолога | нет | Княжество-черновик с URL медиа | 200, 404, 500 |
 | POST | `/api/principalities` | Создание черновика с изображением и видео | multipart: `principality_name`, файлы `principality_image`, `principality_video` | Созданный черновик; ключи файлов в `image_key` и `video_key` сгенерированы на латинице | 201, 400, 409, 500 |
 | PUT | `/api/principalities/draft/publish` | Публикация своего черновика, ид не указывается | JSON: `principality_summary`, `founding_date` (`ГГГГ-ММ-ДД`), `land_coefficient` (от 0 до 1) | Опубликованное княжество | 200, 400, 404, 409, 500 |
@@ -63,7 +63,7 @@ go run ./cmd/principality-web
 
 ### Объект княжества в ответах
 
-Черновик, создание и публикация возвращают базовый объект. Список добавляет `created_by_current_archaeologist` и `principality_like_count`, лента добавляет `principality_like_count` и `next_principality_id`.
+Черновик, создание и публикация возвращают базовый объект. Список добавляет `created_by_current_archaeologist` и `principality_like_count`, лента добавляет `principality_like_count` и `principality_liked`.
 
 | Поле | Тип | Смысл |
 |---|---|---|
@@ -79,7 +79,7 @@ go run ./cmd/principality-web
 | `created_by` | число | Идентификатор археолога-создателя |
 | `created_by_current_archaeologist` | 0 или 1 | Создал ли княжество текущий археолог, только в списке |
 | `principality_like_count` | число | Сколько лайков, в списке и ленте |
-| `next_principality_id` | число | Следующее княжество ленты для кнопки «Далее»; после последнего лента начинается с первого |
+| `principality_liked` | 0 или 1 | Лайкнул ли княжество текущий археолог, только в ленте |
 
 ### Страницы на шаблонах (лабораторные 1 и 2)
 

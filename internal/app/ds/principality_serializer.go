@@ -15,7 +15,7 @@ type PrincipalityCatalogSerializer struct {
 type PrincipalityFeedSerializer struct {
 	PrincipalitySerializer
 	PrincipalityLikeCount int64 `json:"principality_like_count"`
-	NextPrincipalityID    uint  `json:"next_principality_id"`
+	PrincipalityLiked     int   `json:"principality_liked"`
 }
 
 type PrincipalityLikeSerializer struct {

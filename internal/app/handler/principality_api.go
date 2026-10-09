@@ -84,16 +84,21 @@ func (h *Handler) GetPrincipalityFeedAPI(ctx *gin.Context) {
 		return
 	}
 
-	nextPrincipalityID := principality.PrincipalityID
-	nextPrincipality, err := h.Repository.GetNextPublishedPrincipality(principality.PrincipalityID)
-	if err == nil {
-		nextPrincipalityID = nextPrincipality.PrincipalityID
+	currentArchaeologistID := auth.CurrentArchaeologist().ArchaeologistID
+	liked, err := h.Repository.IsPrincipalityLikedBy(principality.PrincipalityID, currentArchaeologistID)
+	if err != nil {
+		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	principalityLiked := 0
+	if liked {
+		principalityLiked = 1
 	}
 
 	ctx.JSON(http.StatusOK, ds.PrincipalityFeedSerializer{
 		PrincipalitySerializer: h.principalitySerializer(principality),
 		PrincipalityLikeCount:  likeCount,
-		NextPrincipalityID:     nextPrincipalityID,
+		PrincipalityLiked:      principalityLiked,
 	})
 }
 

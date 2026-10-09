@@ -35,16 +35,15 @@ type PrincipalityView struct {
 }
 
 type PageData struct {
-	Title              string
-	ActiveTab          string
-	DefaultImageURL    string
-	DefaultVideoURL    string
-	Principalities     []PrincipalityView
-	Principality       PrincipalityView
-	HasDraft           bool
-	NextPrincipalityID uint
-	FoundedBefore      string
-	TotalCount         int
+	Title           string
+	ActiveTab       string
+	DefaultImageURL string
+	DefaultVideoURL string
+	Principalities  []PrincipalityView
+	Principality    PrincipalityView
+	HasDraft        bool
+	FoundedBefore   string
+	TotalCount      int
 }
 
 func (h *Handler) PrincipalityFeed(ctx *gin.Context) {
@@ -82,19 +81,12 @@ func (h *Handler) PrincipalityFeed(ctx *gin.Context) {
 		return
 	}
 
-	nextPrincipalityID := principality.PrincipalityID
-	nextPrincipality, err := h.Repository.GetNextPublishedPrincipality(principality.PrincipalityID)
-	if err == nil {
-		nextPrincipalityID = nextPrincipality.PrincipalityID
-	}
-
 	ctx.HTML(http.StatusOK, "principality_feed.html", PageData{
-		Title:              principality.PrincipalityName,
-		ActiveTab:          "feed",
-		DefaultImageURL:    defaultImageURL,
-		DefaultVideoURL:    defaultVideoURL,
-		Principality:       h.principalityView(principality, likeCount),
-		NextPrincipalityID: nextPrincipalityID,
+		Title:           principality.PrincipalityName,
+		ActiveTab:       "feed",
+		DefaultImageURL: defaultImageURL,
+		DefaultVideoURL: defaultVideoURL,
+		Principality:    h.principalityView(principality, likeCount),
 	})
 }
 
