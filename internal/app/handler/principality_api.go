@@ -10,11 +10,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	"github.com/dehwyy/principality-backend/internal/app/auth"
 	"github.com/dehwyy/principality-backend/internal/app/ds"
 	"github.com/dehwyy/principality-backend/internal/app/repository"
 )
 
+// GetPrincipalitiesAPI godoc
+// @Summary      Список княжеств
+// @Description  Опубликованные княжества с фильтром по дате основания; признак created_by_current_archaeologist для автора, гостю 0
+// @Tags         Княжества
+// @Produce      json
+// @Param        foundedBefore  query     string  false  "Основано до даты, ГГГГ-ММ-ДД"
+// @Success      200            {array}   ds.PrincipalityCatalogSerializer
+// @Failure      400            {object}  map[string]string
+// @Router       /api/principalities [get]
 func (h *Handler) GetPrincipalitiesAPI(ctx *gin.Context) {
 	foundedBefore, _ := parseFoundedBefore(ctx)
 	if foundedBefore == nil && ctx.Query("foundedBefore") != "" {
@@ -33,7 +41,7 @@ func (h *Handler) GetPrincipalitiesAPI(ctx *gin.Context) {
 		return
 	}
 
-	currentArchaeologistID := auth.CurrentArchaeologist().ArchaeologistID
+	currentArchaeologistID := contextArchaeologistID(ctx)
 	catalog := make([]ds.PrincipalityCatalogSerializer, 0, len(principalities))
 	for i := range principalities {
 		createdByCurrentArchaeologist := 0
@@ -50,6 +58,17 @@ func (h *Handler) GetPrincipalitiesAPI(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, catalog)
 }
 
+// GetPrincipalityFeedAPI godoc
+// @Summary      Лента княжеств
+// @Description  Первое опубликованное княжество или княжество по ид; с next=true следующее за ним по кругу; признак principality_liked для археолога, гостю 0
+// @Tags         Княжества
+// @Produce      json
+// @Param        principalityId  path      int     true   "Ид княжества"
+// @Param        next            query     string  false  "true — следующее княжество"
+// @Success      200             {object}  ds.PrincipalityFeedSerializer
+// @Failure      404             {object}  map[string]string
+// @Router       /api/principalities/feed/{principalityId} [get]
+// @Router       /api/principalities/feed [get]
 func (h *Handler) GetPrincipalityFeedAPI(ctx *gin.Context) {
 	requestedPrincipality := ctx.Param("principalityId")
 
@@ -84,7 +103,7 @@ func (h *Handler) GetPrincipalityFeedAPI(ctx *gin.Context) {
 		return
 	}
 
-	currentArchaeologistID := auth.CurrentArchaeologist().ArchaeologistID
+	currentArchaeologistID := contextArchaeologistID(ctx)
 	liked, err := h.Repository.IsPrincipalityLikedBy(principality.PrincipalityID, currentArchaeologistID)
 	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
@@ -102,8 +121,18 @@ func (h *Handler) GetPrincipalityFeedAPI(ctx *gin.Context) {
 	})
 }
 
+// GetPrincipalityDraftAPI godoc
+// @Summary      Черновик археолога
+// @Description  Черновик княжества текущего археолога, ид не указывается
+// @Tags         Княжества
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  ds.PrincipalitySerializer
+// @Failure      403
+// @Failure      404  {object}  map[string]string
+// @Router       /api/principalities/draft [get]
 func (h *Handler) GetPrincipalityDraftAPI(ctx *gin.Context) {
-	principality, err := h.Repository.GetDraftPrincipality(auth.CurrentArchaeologist().ArchaeologistID)
+	principality, err := h.Repository.GetDraftPrincipality(contextArchaeologistID(ctx))
 	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
 		return
@@ -116,6 +145,21 @@ func (h *Handler) GetPrincipalityDraftAPI(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, h.principalitySerializer(principality))
 }
 
+// AddPrincipalityAPI godoc
+// @Summary      Добавление княжества
+// @Description  Создаёт черновик княжества с файлами изображения и видео в Minio; создатель берётся из JWT
+// @Tags         Княжества
+// @Accept       multipart/form-data
+// @Produce      json
+// @Security     BearerAuth
+// @Param        principality_name   formData  string  true  "Название княжества"
+// @Param        principality_image  formData  file    true  "Изображение княжества"
+// @Param        principality_video  formData  file    true  "Короткое видео княжества"
+// @Success      201                 {object}  ds.PrincipalitySerializer
+// @Failure      400                 {object}  map[string]string
+// @Failure      403
+// @Failure      409                 {object}  map[string]string
+// @Router       /api/principalities [post]
 func (h *Handler) AddPrincipalityAPI(ctx *gin.Context) {
 	err := ctx.Request.ParseMultipartForm(32 << 20)
 	if err != nil {
@@ -129,7 +173,7 @@ func (h *Handler) AddPrincipalityAPI(ctx *gin.Context) {
 		return
 	}
 
-	currentArchaeologistID := auth.CurrentArchaeologist().ArchaeologistID
+	currentArchaeologistID := contextArchaeologistID(ctx)
 	existingDraft, err := h.Repository.GetDraftPrincipality(currentArchaeologistID)
 	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
@@ -203,8 +247,21 @@ func (h *Handler) AddPrincipalityAPI(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, h.principalitySerializer(&principality))
 }
 
+// PublishPrincipalityAPI godoc
+// @Summary      Публикация княжества
+// @Description  Публикует черновик текущего археолога с описанием, датой основания и коэффициентом земли
+// @Tags         Княжества
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        publication  body      ds.PrincipalityPublication  true  "Поля публикации"
+// @Success      200          {object}  ds.PrincipalitySerializer
+// @Failure      400          {object}  map[string]string
+// @Failure      403
+// @Failure      404          {object}  map[string]string
+// @Router       /api/principalities/draft/publish [put]
 func (h *Handler) PublishPrincipalityAPI(ctx *gin.Context) {
-	currentArchaeologistID := auth.CurrentArchaeologist().ArchaeologistID
+	currentArchaeologistID := contextArchaeologistID(ctx)
 	draft, err := h.Repository.GetDraftPrincipality(currentArchaeologistID)
 	if err != nil {
 		h.errorHandler(ctx, http.StatusInternalServerError, err)
@@ -261,6 +318,17 @@ func (h *Handler) PublishPrincipalityAPI(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, h.principalitySerializer(publishedPrincipality))
 }
 
+// DeletePrincipalityAPI godoc
+// @Summary      Удаление княжества
+// @Description  Логическое удаление своего княжества через статус removed
+// @Tags         Княжества
+// @Produce      json
+// @Security     BearerAuth
+// @Param        principalityId  path      int  true  "Ид княжества"
+// @Success      200             {object}  map[string]string
+// @Failure      403
+// @Failure      404             {object}  map[string]string
+// @Router       /api/principalities/{principalityId} [delete]
 func (h *Handler) DeletePrincipalityAPI(ctx *gin.Context) {
 	principalityID, ok := h.parsePrincipalityID(ctx)
 	if !ok {
@@ -277,7 +345,7 @@ func (h *Handler) DeletePrincipalityAPI(ctx *gin.Context) {
 		return
 	}
 
-	currentArchaeologistID := auth.CurrentArchaeologist().ArchaeologistID
+	currentArchaeologistID := contextArchaeologistID(ctx)
 	if principality.CreatedBy != currentArchaeologistID {
 		h.errorHandler(ctx, http.StatusForbidden, errors.New("княжество создано другим археологом"))
 		return
@@ -299,6 +367,19 @@ func (h *Handler) DeletePrincipalityAPI(ctx *gin.Context) {
 	})
 }
 
+// LikePrincipalityAPI godoc
+// @Summary      Лайк княжества
+// @Description  1 ставит лайк текущего археолога, 0 отменяет
+// @Tags         Княжества
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        principalityId  path      int                      true  "Ид княжества"
+// @Param        like            body      ds.PrincipalityLikeMark  true  "Признак лайка 0/1"
+// @Success      200             {object}  ds.PrincipalityLikeSerializer
+// @Failure      400             {object}  map[string]string
+// @Failure      403
+// @Router       /api/principalities/{principalityId}/like [post]
 func (h *Handler) LikePrincipalityAPI(ctx *gin.Context) {
 	principalityID, ok := h.parsePrincipalityID(ctx)
 	if !ok {
@@ -330,7 +411,7 @@ func (h *Handler) LikePrincipalityAPI(ctx *gin.Context) {
 		return
 	}
 
-	currentArchaeologistID := auth.CurrentArchaeologist().ArchaeologistID
+	currentArchaeologistID := contextArchaeologistID(ctx)
 	if principalityLiked == 1 {
 		err = h.Repository.SetPrincipalityLike(principalityID, currentArchaeologistID)
 	} else {

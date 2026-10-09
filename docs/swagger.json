@@ -1,0 +1,788 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Веб-сервис расчёта населения удельных княжеств по площади укреплений",
+        "title": "Княжества Древней Руси",
+        "contact": {
+            "name": "Егор, ИУ5-52"
+        },
+        "license": {
+            "name": "AS IS (NO WARRANTY)"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/api/archaeologists": {
+            "post": {
+                "description": "Создаёт археолога с логином и паролем, пароль хранится как SHA-1",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Археологи"
+                ],
+                "summary": "Регистрация археолога",
+                "parameters": [
+                    {
+                        "description": "Логин и пароль археолога",
+                        "name": "registration",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ds.ArchaeologistRegistration"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ds.Archaeologist"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/archaeologists/login": {
+            "post": {
+                "description": "Проверяет логин и пароль и выдаёт JWT для заголовка Authorization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Археологи"
+                ],
+                "summary": "Аутентификация археолога",
+                "parameters": [
+                    {
+                        "description": "Логин и пароль археолога",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ds.ArchaeologistCredentials"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ds.ArchaeologistToken"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            }
+        },
+        "/api/archaeologists/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Кладёт JWT из заголовка Authorization в blacklist Redis",
+                "tags": [
+                    "Археологи"
+                ],
+                "summary": "Деавторизация археолога",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/api/principalities": {
+            "get": {
+                "description": "Опубликованные княжества с фильтром по дате основания; признак created_by_current_archaeologist для автора, гостю 0",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Княжества"
+                ],
+                "summary": "Список княжеств",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Основано до даты, ГГГГ-ММ-ДД",
+                        "name": "foundedBefore",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ds.PrincipalityCatalogSerializer"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Создаёт черновик княжества с файлами изображения и видео в Minio; создатель берётся из JWT",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Княжества"
+                ],
+                "summary": "Добавление княжества",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Название княжества",
+                        "name": "principality_name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Изображение княжества",
+                        "name": "principality_image",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Короткое видео княжества",
+                        "name": "principality_video",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ds.PrincipalitySerializer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/principalities/draft": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Черновик княжества текущего археолога, ид не указывается",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Княжества"
+                ],
+                "summary": "Черновик археолога",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ds.PrincipalitySerializer"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/principalities/draft/publish": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Публикует черновик текущего археолога с описанием, датой основания и коэффициентом земли",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Княжества"
+                ],
+                "summary": "Публикация княжества",
+                "parameters": [
+                    {
+                        "description": "Поля публикации",
+                        "name": "publication",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ds.PrincipalityPublication"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ds.PrincipalitySerializer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/principalities/feed": {
+            "get": {
+                "description": "Первое опубликованное княжество или княжество по ид; с next=true следующее за ним по кругу; признак principality_liked для археолога, гостю 0",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Княжества"
+                ],
+                "summary": "Лента княжеств",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "true — следующее княжество",
+                        "name": "next",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ds.PrincipalityFeedSerializer"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/principalities/feed/{principalityId}": {
+            "get": {
+                "description": "Первое опубликованное княжество или княжество по ид; с next=true следующее за ним по кругу; признак principality_liked для археолога, гостю 0",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Княжества"
+                ],
+                "summary": "Лента княжеств",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Ид княжества",
+                        "name": "principalityId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "true — следующее княжество",
+                        "name": "next",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ds.PrincipalityFeedSerializer"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/principalities/{principalityId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Логическое удаление своего княжества через статус removed",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Княжества"
+                ],
+                "summary": "Удаление княжества",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Ид княжества",
+                        "name": "principalityId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/principalities/{principalityId}/like": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "1 ставит лайк текущего археолога, 0 отменяет",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Княжества"
+                ],
+                "summary": "Лайк княжества",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Ид княжества",
+                        "name": "principalityId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Признак лайка 0/1",
+                        "name": "like",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ds.PrincipalityLikeMark"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ds.PrincipalityLikeSerializer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "ds.Archaeologist": {
+            "type": "object",
+            "properties": {
+                "archaeologist_id": {
+                    "type": "integer"
+                },
+                "archaeologist_login": {
+                    "type": "string"
+                },
+                "is_chronicle_keeper": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ds.ArchaeologistCredentials": {
+            "type": "object",
+            "required": [
+                "archaeologist_login",
+                "archaeologist_password"
+            ],
+            "properties": {
+                "archaeologist_login": {
+                    "type": "string"
+                },
+                "archaeologist_password": {
+                    "type": "string"
+                }
+            }
+        },
+        "ds.ArchaeologistRegistration": {
+            "type": "object",
+            "required": [
+                "archaeologist_login",
+                "archaeologist_password"
+            ],
+            "properties": {
+                "archaeologist_login": {
+                    "type": "string",
+                    "maxLength": 25
+                },
+                "archaeologist_password": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            }
+        },
+        "ds.ArchaeologistToken": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expires_in": {
+                    "type": "integer"
+                },
+                "token_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "ds.PrincipalityCatalogSerializer": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "integer"
+                },
+                "created_by_current_archaeologist": {
+                    "type": "integer"
+                },
+                "founding_date": {
+                    "type": "string"
+                },
+                "image_key": {
+                    "type": "string"
+                },
+                "land_coefficient": {
+                    "type": "number"
+                },
+                "principality_id": {
+                    "type": "integer"
+                },
+                "principality_image_url": {
+                    "type": "string"
+                },
+                "principality_like_count": {
+                    "type": "integer"
+                },
+                "principality_name": {
+                    "type": "string"
+                },
+                "principality_status": {
+                    "type": "string"
+                },
+                "principality_summary": {
+                    "type": "string"
+                },
+                "principality_video_url": {
+                    "type": "string"
+                },
+                "published_at": {
+                    "type": "string"
+                },
+                "video_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "ds.PrincipalityFeedSerializer": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "integer"
+                },
+                "founding_date": {
+                    "type": "string"
+                },
+                "image_key": {
+                    "type": "string"
+                },
+                "land_coefficient": {
+                    "type": "number"
+                },
+                "principality_id": {
+                    "type": "integer"
+                },
+                "principality_image_url": {
+                    "type": "string"
+                },
+                "principality_like_count": {
+                    "type": "integer"
+                },
+                "principality_liked": {
+                    "type": "integer"
+                },
+                "principality_name": {
+                    "type": "string"
+                },
+                "principality_status": {
+                    "type": "string"
+                },
+                "principality_summary": {
+                    "type": "string"
+                },
+                "principality_video_url": {
+                    "type": "string"
+                },
+                "published_at": {
+                    "type": "string"
+                },
+                "video_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "ds.PrincipalityLikeMark": {
+            "type": "object",
+            "required": [
+                "principality_liked"
+            ],
+            "properties": {
+                "principality_liked": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ds.PrincipalityLikeSerializer": {
+            "type": "object",
+            "properties": {
+                "principality_id": {
+                    "type": "integer"
+                },
+                "principality_like_count": {
+                    "type": "integer"
+                },
+                "principality_liked": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ds.PrincipalityPublication": {
+            "type": "object",
+            "required": [
+                "founding_date",
+                "land_coefficient",
+                "principality_summary"
+            ],
+            "properties": {
+                "founding_date": {
+                    "type": "string"
+                },
+                "land_coefficient": {
+                    "type": "number"
+                },
+                "principality_summary": {
+                    "type": "string"
+                }
+            }
+        },
+        "ds.PrincipalitySerializer": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "integer"
+                },
+                "founding_date": {
+                    "type": "string"
+                },
+                "image_key": {
+                    "type": "string"
+                },
+                "land_coefficient": {
+                    "type": "number"
+                },
+                "principality_id": {
+                    "type": "integer"
+                },
+                "principality_image_url": {
+                    "type": "string"
+                },
+                "principality_name": {
+                    "type": "string"
+                },
+                "principality_status": {
+                    "type": "string"
+                },
+                "principality_summary": {
+                    "type": "string"
+                },
+                "principality_video_url": {
+                    "type": "string"
+                },
+                "published_at": {
+                    "type": "string"
+                },
+                "video_key": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Значение заголовка: Bearer \u003caccess_token из /api/archaeologists/login\u003e",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

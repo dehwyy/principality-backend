@@ -35,11 +35,13 @@ go run ./cmd/principality-web
 
 Медиа десяти княжеств из сида кладутся в бакет `principality-media` под именами из столбцов `image_key` и `video_key` (`kiev.jpg`, `kiev.mp4` и так далее), например через `mc cp`. Сервер слушает `http://localhost:8080`, Adminer доступен на `http://localhost:8081`, консоль Minio на `http://localhost:9001`.
 
-В `.env` задаются подключение к PostgreSQL (`DB_*`) и Minio (`MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET_NAME`). Адрес, по которому клиент получает файлы, лежит в `config/config.toml`.
+В `.env` задаются подключение к PostgreSQL (`DB_*`), Minio (`MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET_NAME`), Redis (`REDIS_HOST`, `REDIS_PORT`, `REDIS_USER`, `REDIS_PASSWORD`) и секрет подписи JWT (`JWT_TOKEN`). Адрес, по которому клиент получает файлы, срок жизни токена `[JWT] ExpiresIn` и таймауты `[Redis]` лежат в `config/config.toml`.
+
+Swagger UI доступен на `http://localhost:8080/swagger/index.html`. Описание генерируется командой `swag init -g cmd/principality-web/main.go -o docs`.
 
 ## HTTP-методы
 
-Все методы веб-сервиса начинаются с `/api`. Ответ с ошибкой всегда имеет вид `{"status": "error", "description": "..."}`. Даты в ответах в формате RFC 3339. Княжества в статусе `removed` наружу не отдаются ни одним методом.
+Все методы веб-сервиса начинаются с `/api`. Гостю доступны список, лента, регистрация и аутентификация. Остальные методы требуют заголовок `Authorization: Bearer <access_token>`; без него, с токеном из blacklist или с неверной подписью они отвечают 403. Создатель княжества берётся из токена. Ответ с ошибкой всегда имеет вид `{"status": "error", "description": "..."}`. Даты в ответах в формате RFC 3339. Княжества в статусе `removed` наружу не отдаются ни одним методом.
 
 ### Домен княжества
 
@@ -58,8 +60,8 @@ go run ./cmd/principality-web
 | Метод | URL | Назначение | Вход | Ответ | Коды |
 |---|---|---|---|---|---|
 | POST | `/api/archaeologists` | Регистрация археолога | JSON: `archaeologist_login`, `archaeologist_password` | `archaeologist_id`, `archaeologist_login`, `is_chronicle_keeper`; пароль не возвращается | 201, 400, 409, 500 |
-| POST | `/api/archaeologists/login` | Аутентификация, заглушка до лабораторной 4 | JSON: `archaeologist_login`, `archaeologist_password` | `{"status": "success", "message": "..."}` | 200, 400 |
-| POST | `/api/archaeologists/logout` | Деавторизация, заглушка до лабораторной 4 | нет | `{"status": "success", "message": "..."}` | 200 |
+| POST | `/api/archaeologists/login` | Аутентификация, выдача JWT (HS256, срок из конфига) | JSON: `archaeologist_login`, `archaeologist_password` | `expires_in`, `access_token`, `token_type` (`Bearer`) | 200, 400, 403, 500 |
+| POST | `/api/archaeologists/logout` | Деавторизация: токен кладётся в blacklist Redis под ключом `principality.jwt.<токен>` на срок жизни токена | заголовок `Authorization: Bearer <access_token>` | пустой ответ | 200, 400, 500 |
 
 ### Объект княжества в ответах
 
@@ -120,7 +122,7 @@ go run ./cmd/principality-web
 |---|---|---|---|
 | `archaeologist_id` | `BIGINT` | PK | Идентификатор археолога |
 | `archaeologist_login` | `VARCHAR(25)` | NOT NULL, UNIQUE | Логин |
-| `archaeologist_password` | `VARCHAR(100)` | NOT NULL | Пароль, до лабораторной 4 хранится как прислан |
+| `archaeologist_password` | `VARCHAR(100)` | NOT NULL | SHA-1 пароля в шестнадцатеричном виде |
 | `is_chronicle_keeper` | `BOOLEAN` | по умолчанию `false` | Хранитель летописи, роль модератора |
 
 ### `principality_like`, лайки
@@ -146,4 +148,5 @@ go run ./cmd/principality-web
 
 - `docs/principalities.mdj`: ER-диаграмма и диаграмма классов в StarUML.
 - `docs/principalities.postman_collection.json`: коллекция из десяти запросов к веб-сервису.
+- `docs/swagger.json`, `docs/swagger.yaml`, `docs/docs.go`: описание API для Swagger, сгенерировано `swag`.
 - `migrations/principalities_seed.sql`: десять княжеств, пять археологов и лайки для демонстрации.

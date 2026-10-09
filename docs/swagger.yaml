@@ -1,0 +1,519 @@
+basePath: /
+definitions:
+  ds.Archaeologist:
+    properties:
+      archaeologist_id:
+        type: integer
+      archaeologist_login:
+        type: string
+      is_chronicle_keeper:
+        type: boolean
+    type: object
+  ds.ArchaeologistCredentials:
+    properties:
+      archaeologist_login:
+        type: string
+      archaeologist_password:
+        type: string
+    required:
+    - archaeologist_login
+    - archaeologist_password
+    type: object
+  ds.ArchaeologistRegistration:
+    properties:
+      archaeologist_login:
+        maxLength: 25
+        type: string
+      archaeologist_password:
+        maxLength: 100
+        type: string
+    required:
+    - archaeologist_login
+    - archaeologist_password
+    type: object
+  ds.ArchaeologistToken:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      token_type:
+        type: string
+    type: object
+  ds.PrincipalityCatalogSerializer:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      created_by_current_archaeologist:
+        type: integer
+      founding_date:
+        type: string
+      image_key:
+        type: string
+      land_coefficient:
+        type: number
+      principality_id:
+        type: integer
+      principality_image_url:
+        type: string
+      principality_like_count:
+        type: integer
+      principality_name:
+        type: string
+      principality_status:
+        type: string
+      principality_summary:
+        type: string
+      principality_video_url:
+        type: string
+      published_at:
+        type: string
+      video_key:
+        type: string
+    type: object
+  ds.PrincipalityFeedSerializer:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      founding_date:
+        type: string
+      image_key:
+        type: string
+      land_coefficient:
+        type: number
+      principality_id:
+        type: integer
+      principality_image_url:
+        type: string
+      principality_like_count:
+        type: integer
+      principality_liked:
+        type: integer
+      principality_name:
+        type: string
+      principality_status:
+        type: string
+      principality_summary:
+        type: string
+      principality_video_url:
+        type: string
+      published_at:
+        type: string
+      video_key:
+        type: string
+    type: object
+  ds.PrincipalityLikeMark:
+    properties:
+      principality_liked:
+        type: integer
+    required:
+    - principality_liked
+    type: object
+  ds.PrincipalityLikeSerializer:
+    properties:
+      principality_id:
+        type: integer
+      principality_like_count:
+        type: integer
+      principality_liked:
+        type: integer
+    type: object
+  ds.PrincipalityPublication:
+    properties:
+      founding_date:
+        type: string
+      land_coefficient:
+        type: number
+      principality_summary:
+        type: string
+    required:
+    - founding_date
+    - land_coefficient
+    - principality_summary
+    type: object
+  ds.PrincipalitySerializer:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      founding_date:
+        type: string
+      image_key:
+        type: string
+      land_coefficient:
+        type: number
+      principality_id:
+        type: integer
+      principality_image_url:
+        type: string
+      principality_name:
+        type: string
+      principality_status:
+        type: string
+      principality_summary:
+        type: string
+      principality_video_url:
+        type: string
+      published_at:
+        type: string
+      video_key:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: Егор, ИУ5-52
+  description: Веб-сервис расчёта населения удельных княжеств по площади укреплений
+  license:
+    name: AS IS (NO WARRANTY)
+  title: Княжества Древней Руси
+  version: "1.0"
+paths:
+  /api/archaeologists:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт археолога с логином и паролем, пароль хранится как SHA-1
+      parameters:
+      - description: Логин и пароль археолога
+        in: body
+        name: registration
+        required: true
+        schema:
+          $ref: '#/definitions/ds.ArchaeologistRegistration'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ds.Archaeologist'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Регистрация археолога
+      tags:
+      - Археологи
+  /api/archaeologists/login:
+    post:
+      consumes:
+      - application/json
+      description: Проверяет логин и пароль и выдаёт JWT для заголовка Authorization
+      parameters:
+      - description: Логин и пароль археолога
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/ds.ArchaeologistCredentials'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.ArchaeologistToken'
+        "400":
+          description: Bad Request
+        "403":
+          description: Forbidden
+      summary: Аутентификация археолога
+      tags:
+      - Археологи
+  /api/archaeologists/logout:
+    post:
+      description: Кладёт JWT из заголовка Authorization в blacklist Redis
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+      security:
+      - BearerAuth: []
+      summary: Деавторизация археолога
+      tags:
+      - Археологи
+  /api/principalities:
+    get:
+      description: Опубликованные княжества с фильтром по дате основания; признак
+        created_by_current_archaeologist для автора, гостю 0
+      parameters:
+      - description: Основано до даты, ГГГГ-ММ-ДД
+        in: query
+        name: foundedBefore
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ds.PrincipalityCatalogSerializer'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Список княжеств
+      tags:
+      - Княжества
+    post:
+      consumes:
+      - multipart/form-data
+      description: Создаёт черновик княжества с файлами изображения и видео в Minio;
+        создатель берётся из JWT
+      parameters:
+      - description: Название княжества
+        in: formData
+        name: principality_name
+        required: true
+        type: string
+      - description: Изображение княжества
+        in: formData
+        name: principality_image
+        required: true
+        type: file
+      - description: Короткое видео княжества
+        in: formData
+        name: principality_video
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ds.PrincipalitySerializer'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Добавление княжества
+      tags:
+      - Княжества
+  /api/principalities/{principalityId}:
+    delete:
+      description: Логическое удаление своего княжества через статус removed
+      parameters:
+      - description: Ид княжества
+        in: path
+        name: principalityId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Удаление княжества
+      tags:
+      - Княжества
+  /api/principalities/{principalityId}/like:
+    post:
+      consumes:
+      - application/json
+      description: 1 ставит лайк текущего археолога, 0 отменяет
+      parameters:
+      - description: Ид княжества
+        in: path
+        name: principalityId
+        required: true
+        type: integer
+      - description: Признак лайка 0/1
+        in: body
+        name: like
+        required: true
+        schema:
+          $ref: '#/definitions/ds.PrincipalityLikeMark'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.PrincipalityLikeSerializer'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+      security:
+      - BearerAuth: []
+      summary: Лайк княжества
+      tags:
+      - Княжества
+  /api/principalities/draft:
+    get:
+      description: Черновик княжества текущего археолога, ид не указывается
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.PrincipalitySerializer'
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Черновик археолога
+      tags:
+      - Княжества
+  /api/principalities/draft/publish:
+    put:
+      consumes:
+      - application/json
+      description: Публикует черновик текущего археолога с описанием, датой основания
+        и коэффициентом земли
+      parameters:
+      - description: Поля публикации
+        in: body
+        name: publication
+        required: true
+        schema:
+          $ref: '#/definitions/ds.PrincipalityPublication'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.PrincipalitySerializer'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Публикация княжества
+      tags:
+      - Княжества
+  /api/principalities/feed:
+    get:
+      description: Первое опубликованное княжество или княжество по ид; с next=true
+        следующее за ним по кругу; признак principality_liked для археолога, гостю
+        0
+      parameters:
+      - description: true — следующее княжество
+        in: query
+        name: next
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.PrincipalityFeedSerializer'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Лента княжеств
+      tags:
+      - Княжества
+  /api/principalities/feed/{principalityId}:
+    get:
+      description: Первое опубликованное княжество или княжество по ид; с next=true
+        следующее за ним по кругу; признак principality_liked для археолога, гостю
+        0
+      parameters:
+      - description: Ид княжества
+        in: path
+        name: principalityId
+        required: true
+        type: integer
+      - description: true — следующее княжество
+        in: query
+        name: next
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.PrincipalityFeedSerializer'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Лента княжеств
+      tags:
+      - Княжества
+schemes:
+- http
+securityDefinitions:
+  BearerAuth:
+    description: 'Значение заголовка: Bearer <access_token из /api/archaeologists/login>'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

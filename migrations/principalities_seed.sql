@@ -1,9 +1,9 @@
 INSERT INTO archaeologist (archaeologist_id, archaeologist_login, archaeologist_password, is_chronicle_keeper) VALUES
-  (1, 'a.kuza',       'kuza_gorodishcha_1996',     true),
-  (2, 'm.tikhomirov', 'tikhomirov_goroda_1956',    false),
-  (3, 'v.kuchkin',    'kuchkin_naselenie_1985',    false),
-  (4, 'p.tolochko',   'tolochko_kiev_1983',        false),
-  (5, 'n.makarov',    'makarov_arkheologiya_2012', false);
+  (1, 'a.kuza',       'dd727471e59942dd669109029872f251b4a54c3b', true),
+  (2, 'm.tikhomirov', 'c1283c7f1a474063575ea6d96874bb9486f54fd4', false),
+  (3, 'v.kuchkin',    'e53578a9bdb86ccb00bad962c3ee467c1cb8fd0d', false),
+  (4, 'p.tolochko',   '3dc0035b1a3135175ec878e1c22fbd86a5d9cb92', false),
+  (5, 'n.makarov',    '36aad6eed6fde2be92eb18202192b1682cc1b5be', false);
 
 INSERT INTO principality (principality_id, principality_name, principality_summary, principality_status, image_key, video_key, founding_date, land_coefficient, created_at, published_at, created_by) VALUES
   (1, 'Киевское княжество', 'Стольный град Киев - крупнейший укреплённый центр Древней Руси. Город Владимира, город Ярослава и город Изяслава вместе с Подолом дают около 300 гектаров укреплённой площади, что делает Киев верхней границей шкалы при любой оценке городского населения домонгольской Руси.', 'published', 'kiev.jpg', 'kiev.mp4', '0882-01-01', 0.55, '2026-09-01 10:00:00', '2026-09-01 10:30:00', 1),

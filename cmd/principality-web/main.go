@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -9,10 +10,25 @@ import (
 	"github.com/dehwyy/principality-backend/internal/app/config"
 	"github.com/dehwyy/principality-backend/internal/app/dsn"
 	"github.com/dehwyy/principality-backend/internal/app/handler"
+	"github.com/dehwyy/principality-backend/internal/app/redis"
 	"github.com/dehwyy/principality-backend/internal/app/repository"
 	"github.com/dehwyy/principality-backend/internal/pkg"
+
+	_ "github.com/dehwyy/principality-backend/docs"
 )
 
+// @title Княжества Древней Руси
+// @version 1.0
+// @description Веб-сервис расчёта населения удельных княжеств по площади укреплений
+// @contact.name Егор, ИУ5-52
+// @license.name AS IS (NO WARRANTY)
+// @host localhost:8080
+// @schemes http
+// @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Значение заголовка: Bearer <access_token из /api/archaeologists/login>
 func main() {
 	router := gin.Default()
 	conf, err := config.NewConfig()
@@ -33,7 +49,13 @@ func main() {
 		logrus.Fatalf("error initializing repository: %v", errRep)
 	}
 
-	hand := handler.NewHandler(rep, conf)
+	redisClient, err := redis.New(context.Background(), conf.Redis)
+	if err != nil {
+		logrus.Fatalf("error initializing redis: %v", err)
+	}
+	defer redisClient.Close()
+
+	hand := handler.NewHandler(rep, conf, redisClient)
 
 	application := pkg.NewApp(conf, router, hand)
 	application.RunApp()

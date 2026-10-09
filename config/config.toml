@@ -1,3 +1,10 @@
 ServiceHost = "0.0.0.0"
 ServicePort = 8080
 MinioBaseURL = "http://localhost:9000"
+
+[JWT]
+ExpiresIn = "1h"
+
+[Redis]
+DialTimeout = "10s"
+ReadTimeout = "10s"

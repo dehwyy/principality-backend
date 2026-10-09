@@ -1,5 +1,7 @@
 package ds
 
+import "github.com/dehwyy/principality-backend/internal/app/role"
+
 type Archaeologist struct {
 	ArchaeologistID       uint   `gorm:"primaryKey" json:"archaeologist_id"`
 	ArchaeologistLogin    string `gorm:"type:varchar(25);unique;not null" json:"archaeologist_login"`
@@ -9,4 +11,11 @@ type Archaeologist struct {
 
 func (Archaeologist) TableName() string {
 	return "archaeologist"
+}
+
+func (a *Archaeologist) ArchaeologistRole() role.Role {
+	if a.IsChronicleKeeper {
+		return role.ChronicleKeeper
+	}
+	return role.Archaeologist
 }
