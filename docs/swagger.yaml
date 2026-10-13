@@ -167,8 +167,8 @@ definitions:
 host: localhost:8080
 info:
   contact:
-    name: Егор, ИУ5-52
-  description: Веб-сервис расчёта населения удельных княжеств по площади укреплений
+    name: Егор Купрюшин, ИУ5-52Б
+  description: Веб-сервис учёта удельных княжеств Древней Руси
   license:
     name: AS IS (NO WARRANTY)
   title: Княжества Древней Руси
@@ -205,6 +205,12 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       summary: Регистрация археолога
       tags:
       - Археологи
@@ -231,6 +237,8 @@ paths:
           description: Bad Request
         "403":
           description: Forbidden
+        "500":
+          description: Internal Server Error
       summary: Аутентификация археолога
       tags:
       - Археологи
@@ -242,6 +250,8 @@ paths:
           description: OK
         "400":
           description: Bad Request
+        "500":
+          description: Internal Server Error
       security:
       - BearerAuth: []
       summary: Деавторизация археолога
@@ -271,6 +281,14 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
       summary: Список княжеств
       tags:
       - Княжества
@@ -316,6 +334,12 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Добавление княжества
@@ -339,10 +363,22 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "403":
           description: Forbidden
         "404":
           description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
           schema:
             additionalProperties:
               type: string
@@ -384,6 +420,18 @@ paths:
             type: object
         "403":
           description: Forbidden
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Лайк княжества
@@ -403,6 +451,12 @@ paths:
           description: Forbidden
         "404":
           description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
           schema:
             additionalProperties:
               type: string
@@ -446,6 +500,18 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Публикация княжества
@@ -468,12 +534,26 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/ds.PrincipalityFeedSerializer'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
             additionalProperties:
               type: string
             type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
       summary: Лента княжеств
       tags:
       - Княжества
@@ -499,12 +579,26 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/ds.PrincipalityFeedSerializer'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
             additionalProperties:
               type: string
             type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
       summary: Лента княжеств
       tags:
       - Княжества

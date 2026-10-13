@@ -19,8 +19,8 @@ import (
 
 // @title Княжества Древней Руси
 // @version 1.0
-// @description Веб-сервис расчёта населения удельных княжеств по площади укреплений
-// @contact.name Егор, ИУ5-52
+// @description Веб-сервис учёта удельных княжеств Древней Руси
+// @contact.name Егор Купрюшин, ИУ5-52Б
 // @license.name AS IS (NO WARRANTY)
 // @host localhost:8080
 // @schemes http

@@ -17,7 +17,6 @@ import (
 	"github.com/dehwyy/principality-backend/internal/app/ds"
 )
 
-// RegisterArchaeologistAPI godoc
 // @Summary      Регистрация археолога
 // @Description  Создаёт археолога с логином и паролем, пароль хранится как SHA-1
 // @Tags         Археологи
@@ -27,6 +26,7 @@ import (
 // @Success      201           {object}  ds.Archaeologist
 // @Failure      400           {object}  map[string]string
 // @Failure      409           {object}  map[string]string
+// @Failure      500           {object}  map[string]string
 // @Router       /api/archaeologists [post]
 func (h *Handler) RegisterArchaeologistAPI(ctx *gin.Context) {
 	var registration ds.ArchaeologistRegistration
@@ -58,7 +58,6 @@ func (h *Handler) RegisterArchaeologistAPI(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, archaeologist)
 }
 
-// LoginArchaeologistAPI godoc
 // @Summary      Аутентификация археолога
 // @Description  Проверяет логин и пароль и выдаёт JWT для заголовка Authorization
 // @Tags         Археологи
@@ -68,6 +67,7 @@ func (h *Handler) RegisterArchaeologistAPI(ctx *gin.Context) {
 // @Success      200          {object}  ds.ArchaeologistToken
 // @Failure      400
 // @Failure      403
+// @Failure      500
 // @Router       /api/archaeologists/login [post]
 func (h *Handler) LoginArchaeologistAPI(gCtx *gin.Context) {
 	cfg := h.Config
@@ -118,13 +118,13 @@ func (h *Handler) LoginArchaeologistAPI(gCtx *gin.Context) {
 	gCtx.AbortWithStatus(http.StatusForbidden)
 }
 
-// LogoutArchaeologistAPI godoc
 // @Summary      Деавторизация археолога
 // @Description  Кладёт JWT из заголовка Authorization в blacklist Redis
 // @Tags         Археологи
 // @Security     BearerAuth
 // @Success      200
 // @Failure      400
+// @Failure      500
 // @Router       /api/archaeologists/logout [post]
 func (h *Handler) LogoutArchaeologistAPI(gCtx *gin.Context) {
 	jwtStr := gCtx.GetHeader("Authorization")
